@@ -1,0 +1,14 @@
+{
+  "domain": "genia_air",
+  "name": "Vaillant Genia Air",
+  "version": "0.1.0",
+  "documentation": "https://github.com/hirofairlane/genia-air-ha",
+  "issue_tracker": "https://github.com/hirofairlane/genia-air-ha/issues",
+  "codeowners": ["@hirofairlane"],
+  "config_flow": true,
+  "dependencies": ["mqtt"],
+  "iot_class": "local_push",
+  "integration_type": "device",
+  "requirements": [],
+  "loggers": ["custom_components.genia_air"]
+}

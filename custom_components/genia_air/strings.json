@@ -1,0 +1,83 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Vaillant Genia Air",
+        "description": "This integration relies on the ebusd add-on by LukasGrebe ({ebusd_repo}) publishing eBUS messages to MQTT. Make sure the add-on is installed and running before continuing.",
+        "data": {
+          "topic_prefix": "MQTT topic prefix (set in the ebusd add-on, default 'ebusd')",
+          "system_type": "Type of installation",
+          "language": "Friendly name language"
+        }
+      },
+      "discovery": {
+        "title": "Discovering eBUS traffic..."
+      },
+      "migration": {
+        "title": "Migrate {count} existing entities?",
+        "description": "We detected {count} entities from a previous installation of the raw ebusd MQTT discovery (or genia-air-pack). We can adopt them so your existing history, dashboards and automations keep working.",
+        "data": {
+          "migrate_legacy": "Adopt existing entities (recommended)"
+        }
+      },
+      "confirm": {
+        "title": "Confirm installation",
+        "description": "Topic prefix: {topic_prefix}\nSystem type: {system_type}\nDiscovered ebusd topics: {discovered}\nEntities to migrate: {to_migrate}"
+      }
+    },
+    "error": {
+      "mqtt_unavailable": "MQTT integration is not available. Install Mosquitto or another broker first.",
+      "no_ebusd_traffic": "No ebusd traffic detected in 30 s. Check the ebusd add-on is running and the topic prefix is correct."
+    },
+    "abort": {
+      "already_configured": "This Genia Air installation is already configured.",
+      "mqtt_unavailable": "MQTT integration is not available.",
+      "no_ebusd_traffic": "No ebusd traffic detected."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power_input": {"name": "Electrical power input"},
+      "power_output": {"name": "Thermal power output"},
+      "compressor_modulation": {"name": "Compressor modulation"},
+      "water_throughput": {"name": "Water flow"},
+      "flow_temp_supply": {"name": "Flow temperature (supply)"},
+      "flow_temp_return": {"name": "Flow temperature (return)"},
+      "outside_temp_avg": {"name": "Outside temperature (averaged)"},
+      "zone_room_temp": {"name": "Zone room temperature"},
+      "zone_setpoint_actual": {"name": "Zone setpoint (current)"},
+      "yield_total": {"name": "Total thermal yield"},
+      "hours_total": {"name": "Operating hours (total)"},
+      "hours_heating": {"name": "Operating hours (heating)"},
+      "hours_cooling": {"name": "Operating hours (cooling)"},
+      "error_history_last": {"name": "Last error code"},
+      "heating_delta_t": {"name": "Heating ΔT"},
+      "cop_instantaneous": {"name": "COP (instantaneous)"},
+      "compressor_state": {"name": "Compressor state"}
+    },
+    "binary_sensor": {
+      "active_fault": {"name": "Active fault"},
+      "low_flow": {"name": "Low water flow"},
+      "delta_t_anomaly": {"name": "ΔT anomaly"},
+      "maintenance_due": {"name": "Maintenance due"}
+    },
+    "number": {
+      "setpoint_manual": {"name": "Manual setpoint"},
+      "setpoint_day": {"name": "Day setpoint"},
+      "setpoint_night": {"name": "Night setpoint"},
+      "setpoint_holiday": {"name": "Holiday setpoint"},
+      "setpoint_cooling": {"name": "Cooling setpoint"},
+      "setpoint_quick_veto": {"name": "Quick veto setpoint"},
+      "max_flow_temp": {"name": "Max flow temperature"},
+      "min_flow_temp": {"name": "Min flow temperature"},
+      "summer_temp_limit": {"name": "Summer temperature limit"},
+      "continuous_heating": {"name": "Continuous heating threshold"}
+    }
+  },
+  "services": {
+    "rollback_migration": {
+      "name": "Rollback migration",
+      "description": "Restore the legacy unique_ids from before the integration adopted them. Useful if something went wrong and you want to revert to the raw ebusd MQTT discovery."
+    }
+  }
+}

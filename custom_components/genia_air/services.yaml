@@ -1,0 +1,3 @@
+rollback_migration:
+  name: Rollback migration
+  description: Restore legacy unique_ids from snapshot, undoing the adoption done at install time.
