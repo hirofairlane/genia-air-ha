@@ -63,6 +63,50 @@ class GeniaAirCoordinator(DataUpdateCoordinator[dict]):
         )
         # Set empty data so HA doesn't complain about unset
         self.async_set_updated_data({})
+        # ebusd publishes some messages spontaneously (HMU telemetry, broadcasts)
+        # but CTLS2 controller messages typically only respond to explicit reads.
+        # Kick off an initial sync so entities aren't stuck unavailable.
+        self.hass.async_create_task(self._async_initial_sync())
+
+    async def _async_initial_sync(self) -> None:
+        """Force-read every (circuit, msg) entities depend on, with spacing."""
+        # Wait a moment for spontaneous traffic to arrive (avoids re-reading
+        # messages that are already in state) and for MQTT to be fully ready.
+        await asyncio.sleep(3)
+
+        # Late import to avoid circulars and keep the catalog as source of truth
+        from .entities_catalog import ENTITIES
+
+        # Collect targets the platforms care about. The catalog covers sensor /
+        # binary_sensor / number; climate + select add a handful of CTLS2 msgs.
+        targets: set[tuple[str, str]] = {
+            (e.circuit, e.msg) for e in ENTITIES
+        }
+        targets.update({
+            ("ctls2", "z1OpMode"),
+            ("ctls2", "z1OpModeCooling"),
+            ("ctls2", "z1SfMode"),
+            ("ctls2", "z1ManualTemp"),
+            ("ctls2", "z1CoolingTemp"),
+            ("ctls2", "z1RoomTemp"),
+            ("ctls2", "GlobalSystemOff"),
+            ("hmu",   "State"),
+        })
+
+        pending = [t for t in targets if t not in self.state]
+        if not pending:
+            _LOGGER.info("Initial sync: all %d messages already received", len(targets))
+            return
+
+        _LOGGER.info(
+            "Initial sync: requesting %d/%d messages from ebusd",
+            len(pending), len(targets),
+        )
+        # Pace the reads so we don't queue-jam ebusd's polling loop.
+        for circuit, msg in pending:
+            await self.async_request_read(circuit, msg)
+            await asyncio.sleep(0.15)
+        _LOGGER.info("Initial sync: requests dispatched")
 
     async def async_stop(self) -> None:
         if self._unsub:
