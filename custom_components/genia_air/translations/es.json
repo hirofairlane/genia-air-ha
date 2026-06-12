@@ -68,6 +68,14 @@
       "min_flow_temp": {"name": "Temperatura mínima de impulsión"},
       "summer_temp_limit": {"name": "Límite de temperatura verano"},
       "continuous_heating": {"name": "Umbral calefacción continua"}
+    },
+    "climate": {
+      "zone_1_thermostat": {"name": "Termostato zona 1"}
+    },
+    "select": {
+      "zone_opmode_heating": {"name": "Modo operación calefacción"},
+      "zone_opmode_cooling": {"name": "Modo operación refrigeración"},
+      "zone_sfmode": {"name": "Función especial"}
     }
   },
   "services": {

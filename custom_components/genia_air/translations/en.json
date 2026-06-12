@@ -72,6 +72,14 @@
       "min_flow_temp": {"name": "Min flow temperature"},
       "summer_temp_limit": {"name": "Summer temperature limit"},
       "continuous_heating": {"name": "Continuous heating threshold"}
+    },
+    "climate": {
+      "zone_1_thermostat": {"name": "Zone 1 thermostat"}
+    },
+    "select": {
+      "zone_opmode_heating": {"name": "Heating operation mode"},
+      "zone_opmode_cooling": {"name": "Cooling operation mode"},
+      "zone_sfmode": {"name": "Special function"}
     }
   },
   "services": {
