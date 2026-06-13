@@ -32,7 +32,7 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.1.1"
+VERSION = "0.1.3"
 
 
 def _load_options() -> dict:
@@ -45,28 +45,50 @@ def _load_options() -> dict:
         return {}
 
 
-def _query_supervisor_mqtt() -> dict:
-    """Ask the supervisor for the MQTT broker config (host/port/user/pass)."""
-    token = os.environ.get("SUPERVISOR_TOKEN", "")
+def _query_supervisor_mqtt(retries: int = 12, backoff: float = 2.0) -> dict:
+    """Ask the supervisor for the MQTT broker config.
+
+    Run at boot, so the supervisor may not be ready yet — retry with backoff.
+    Logging isn't configured yet at this point; print to stderr so it survives.
+    """
+    import sys as _sys
+    import time as _t
+
+    token = os.environ.get("SUPERVISOR_TOKEN") or os.environ.get("HASSIO_TOKEN") or ""
     if not token:
+        print("[boot] No SUPERVISOR_TOKEN/HASSIO_TOKEN — running outside HA?", file=_sys.stderr)
         return {}
-    try:
-        r = requests.get(
-            "http://supervisor/services/mqtt",
-            headers={"Authorization": f"Bearer {token}"},
-            timeout=5,
-        )
-        if r.status_code == 200:
-            data = r.json().get("data", {})
-            return {
-                "host": data.get("host", "core-mosquitto"),
-                "port": int(data.get("port", 1883)),
-                "username": data.get("username", ""),
-                "password": data.get("password", ""),
-            }
-        logging.warning("Supervisor /services/mqtt: HTTP %s", r.status_code)
-    except Exception as exc:
-        logging.warning("Supervisor /services/mqtt failed: %s", exc)
+    for attempt in range(1, retries + 1):
+        try:
+            r = requests.get(
+                "http://supervisor/services/mqtt",
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=5,
+            )
+            if r.status_code == 200:
+                data = r.json().get("data", {})
+                print(
+                    f"[boot] Got MQTT creds from supervisor on attempt {attempt} "
+                    f"(host={data.get('host')}, user={data.get('username')})",
+                    file=_sys.stderr,
+                )
+                return {
+                    "host": data.get("host", "core-mosquitto"),
+                    "port": int(data.get("port", 1883)),
+                    "username": data.get("username", ""),
+                    "password": data.get("password", ""),
+                }
+            print(
+                f"[boot] Supervisor /services/mqtt attempt {attempt} → HTTP {r.status_code}",
+                file=_sys.stderr,
+            )
+        except Exception as exc:
+            print(
+                f"[boot] Supervisor /services/mqtt attempt {attempt} failed: {exc}",
+                file=_sys.stderr,
+            )
+        _t.sleep(backoff)
+    print("[boot] Giving up on supervisor MQTT introspection", file=_sys.stderr)
     return {}
 
 

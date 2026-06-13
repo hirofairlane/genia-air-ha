@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.3 — 2026-06-13
+
+- `run.sh` now uses `#!/usr/bin/with-contenv sh` — the HA base-image s6
+  init scrubs env for legacy-services so SUPERVISOR_TOKEN never reached
+  Python. With `with-contenv` the token is preserved.
+- Python falls back to HASSIO_TOKEN if SUPERVISOR_TOKEN is missing.
+
+## 0.1.2 — 2026-06-13
+
+- Retry the supervisor MQTT introspection with backoff (the supervisor
+  isn't always ready at the exact moment the add-on starts).
+- Print boot diagnostics to stderr before the logger is configured.
+
 ## 0.1.1 — 2026-06-13
 
 - Moved supervisor MQTT introspection from `run.sh` (broken under busybox

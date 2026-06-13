@@ -1,5 +1,5 @@
 name: Vaillant Genia Air
-version: "0.1.1"
+version: "0.1.3"
 slug: genia_air
 description: Standalone control & optimization dashboard for the Vaillant Genia Air heat pump (via the ebusd add-on)
 url: https://github.com/hirofairlane/genia-air-ha
