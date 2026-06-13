@@ -32,7 +32,7 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.1.3"
+VERSION = "0.1.4"
 
 
 def _load_options() -> dict:
@@ -875,11 +875,12 @@ def api_config():
 # ───────────────────────────────────────────────────────────────────────────
 
 PANEL = r"""<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Genia Air</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
 :root{--bg:#0f172a;--s:#1e293b;--b:#334155;--a:#38bdf8;--g:#4ade80;--y:#fbbf24;--r:#f87171;--o:#fb923c;--t:#e2e8f0;--m:#94a3b8;--p:#a78bfa}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -896,6 +897,8 @@ h2{font-size:.7rem;color:var(--m);text-transform:uppercase;letter-spacing:.08em;
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem}
 @media(max-width:700px){.grid2{grid-template-columns:1fr}}
 .card{background:var(--s);border-radius:.75rem;padding:.9rem;border:1px solid var(--b)}
+.chart-card{display:flex;flex-direction:column}
+.chart-wrap{position:relative;height:240px;width:100%}
 .metric{font-size:1.8rem;font-weight:700;color:var(--a);line-height:1}
 .metric.g{color:var(--g)}.metric.y{color:var(--y)}.metric.r{color:var(--r)}.metric.o{color:var(--o)}.metric.p{color:var(--p)}
 .label{font-size:.72rem;color:var(--m);margin-top:.3rem}
@@ -909,7 +912,7 @@ h2{font-size:.7rem;color:var(--m);text-transform:uppercase;letter-spacing:.08em;
 .btn{background:var(--a);color:#0f172a;border:none;padding:.45rem 1rem;border-radius:.5rem;font-weight:700;cursor:pointer;font-size:.8rem;transition:.15s opacity}
 .btn:hover{opacity:.85}.btn:disabled{opacity:.4;cursor:default}
 .btn-y{background:var(--y)}.btn-g{background:var(--g)}.btn-r{background:var(--r)}.btn-p{background:var(--p)}.btn-sm{padding:.3rem .7rem;font-size:.72rem}
-.actions{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.actions{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
 .thermo{background:var(--s);border-radius:.75rem;padding:1.1rem;border:1px solid var(--b);margin-bottom:1rem}
 .thermo-row{display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.8rem}
 .thermo-temp{font-size:3rem;font-weight:700;color:var(--a);line-height:1}
@@ -953,66 +956,67 @@ input:checked+.tslide:before{transform:translateX(20px);background:#0f172a}
 <h1>🌡️ Genia Air <span id="version" style="font-size:.7rem;color:var(--m);font-weight:400">v...</span></h1>
 <div id="toast" class="toast"></div>
 <div class="tabs">
-  <button class="tab active" data-tab="estado">📊 Estado</button>
-  <button class="tab" data-tab="graficas">📈 Gráficas</button>
-  <button class="tab" data-tab="controles">🎛️ Controles</button>
+  <button class="tab active" data-tab="overview">📊 Overview</button>
+  <button class="tab" data-tab="charts">📈 Charts</button>
+  <button class="tab" data-tab="controls">🎛️ Controls</button>
   <button class="tab" data-tab="optimizer">🧠 Optimizer</button>
-  <button class="tab" data-tab="diag">🔧 Diagnóstico</button>
+  <button class="tab" data-tab="diag">🔧 Diagnostics</button>
 </div>
 
-<!-- ── Estado ── -->
-<div id="t-estado" class="tab-content active">
+<!-- Overview -->
+<div id="t-overview" class="tab-content active">
   <div id="health-banner"></div>
   <div class="thermo">
-    <h2 style="margin-top:0">Termostato Zona 1</h2>
+    <h2 style="margin-top:0">Zone 1 thermostat</h2>
     <div class="thermo-row">
       <div>
         <div class="thermo-temp" id="room-temp">--</div>
-        <div class="label">Temperatura ambiente</div>
+        <div class="label">Room temperature</div>
       </div>
       <div class="thermo-meta">
-        <div class="thermo-line">Setpoint actual: <span id="setp-actual">--</span></div>
-        <div class="thermo-line">Modo: <span id="hvac-mode" class="mode-pill bg-m">--</span> <span id="hvac-action" class="action-pill bg-m">--</span></div>
-        <div class="thermo-line">Exterior promediada: <span id="outside">--</span></div>
+        <div class="thermo-line">Current setpoint: <span id="setp-actual">--</span></div>
+        <div class="thermo-line">Mode: <span id="hvac-mode" class="mode-pill bg-m">--</span> <span id="hvac-action" class="action-pill bg-m">--</span></div>
+        <div class="thermo-line">Outdoor (averaged): <span id="outside">--</span></div>
       </div>
     </div>
     <div class="setp-row">
-      <span class="label" style="margin:0">Cambiar setpoint:</span>
+      <span class="label" style="margin:0">Change setpoint:</span>
       <input id="setp-input" type="number" step="0.5" min="12" max="28">
-      <button class="btn btn-sm" onclick="setSetpoint()">Aplicar</button>
+      <button class="btn btn-sm" onclick="setSetpoint()">Apply</button>
     </div>
   </div>
-  <h2>Sistema</h2>
+  <h2>System</h2>
   <div id="kpis" class="grid"></div>
   <h2>Optimizer</h2>
   <div id="opt-status" class="card" style="font-size:.85rem"></div>
 </div>
 
-<!-- ── Gráficas ── -->
-<div id="t-graficas" class="tab-content">
+<!-- Charts -->
+<div id="t-charts" class="tab-content">
   <div class="actions">
+    <span class="label" style="margin:0">Window:</span>
     <select id="chart-window">
       <option value="6">6 h</option>
       <option value="24" selected>24 h</option>
       <option value="72">72 h</option>
-      <option value="168">7 días</option>
+      <option value="168">7 days</option>
     </select>
-    <button class="btn btn-sm" onclick="loadCharts()">🔄 Refrescar</button>
+    <button class="btn btn-sm" onclick="loadCharts()">🔄 Refresh</button>
   </div>
   <div class="grid2">
-    <div class="card"><h2 style="margin-top:0">Temperaturas (°C)</h2><canvas id="ch-temps"></canvas></div>
-    <div class="card"><h2 style="margin-top:0">ΔT impulsión-retorno (K)</h2><canvas id="ch-dt"></canvas></div>
+    <div class="card chart-card"><h2 style="margin-top:0">Temperatures (°C)</h2><div class="chart-wrap"><canvas id="ch-temps"></canvas></div></div>
+    <div class="card chart-card"><h2 style="margin-top:0">ΔT supply − return (K)</h2><div class="chart-wrap"><canvas id="ch-dt"></canvas></div></div>
   </div>
   <div class="grid2">
-    <div class="card"><h2 style="margin-top:0">Potencias eléctrica vs térmica (kW)</h2><canvas id="ch-pow"></canvas></div>
-    <div class="card"><h2 style="margin-top:0">COP instantáneo</h2><canvas id="ch-cop"></canvas></div>
+    <div class="card chart-card"><h2 style="margin-top:0">Electric vs thermal power (kW)</h2><div class="chart-wrap"><canvas id="ch-pow"></canvas></div></div>
+    <div class="card chart-card"><h2 style="margin-top:0">COP (instantaneous)</h2><div class="chart-wrap"><canvas id="ch-cop"></canvas></div></div>
   </div>
 </div>
 
-<!-- ── Controles ── -->
-<div id="t-controles" class="tab-content">
+<!-- Controls -->
+<div id="t-controls" class="tab-content">
   <div class="card">
-    <h2 style="margin-top:0">Modo HVAC</h2>
+    <h2 style="margin-top:0">HVAC mode</h2>
     <div class="actions">
       <button class="btn btn-sm" onclick="setMode('off')">⏻ Off</button>
       <button class="btn btn-sm btn-g" onclick="setMode('heat')">🔥 Heat</button>
@@ -1021,38 +1025,38 @@ input:checked+.tslide:before{transform:translateX(20px);background:#0f172a}
     </div>
   </div>
   <div class="card">
-    <h2 style="margin-top:0">Setpoints zona</h2>
+    <h2 style="margin-top:0">Zone setpoints</h2>
     <div id="setp-sliders"></div>
   </div>
   <div class="card">
-    <h2 style="margin-top:0">Curva impulsión &amp; seguridad</h2>
+    <h2 style="margin-top:0">Flow curve &amp; safety limits</h2>
     <div id="flow-sliders"></div>
   </div>
 </div>
 
-<!-- ── Optimizer ── -->
+<!-- Optimizer -->
 <div id="t-optimizer" class="tab-content">
   <div class="card" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
     <label class="toggle"><input type="checkbox" id="opt-toggle" onchange="toggleOptimizer()"><span class="tslide"></span></label>
     <div>
-      <div style="font-weight:600">Control activo</div>
-      <div class="sub" style="margin-top:.2rem">Curva dinámica + estacional + safety enforcement</div>
+      <div style="font-weight:600">Active control</div>
+      <div class="sub" style="margin-top:.2rem">Dynamic flow curve, seasonal switchover, safety enforcement</div>
     </div>
   </div>
-  <h2>Decisiones recientes</h2>
+  <h2>Recent decisions</h2>
   <div class="card" style="overflow-x:auto">
-    <table><thead><tr><th>Hora</th><th>Tipo</th><th>Razón</th></tr></thead><tbody id="dec-tbody"></tbody></table>
+    <table><thead><tr><th>Time</th><th>Type</th><th>Reason</th></tr></thead><tbody id="dec-tbody"></tbody></table>
   </div>
 </div>
 
-<!-- ── Diagnóstico ── -->
+<!-- Diagnostics -->
 <div id="t-diag" class="tab-content">
   <div class="actions">
     <button class="btn btn-sm" onclick="forceRead()">📡 Force-read all</button>
-    <button class="btn btn-sm" onclick="loadDiag()">🔄 Refrescar</button>
+    <button class="btn btn-sm" onclick="loadDiag()">🔄 Refresh</button>
   </div>
   <div class="card" style="overflow-x:auto">
-    <table><thead><tr><th>Circuit</th><th>Msg</th><th>Fields</th><th>Hace</th></tr></thead><tbody id="diag-tbody"></tbody></table>
+    <table><thead><tr><th>Circuit</th><th>Message</th><th>Fields</th><th>Age</th></tr></thead><tbody id="diag-tbody"></tbody></table>
   </div>
 </div>
 
@@ -1061,7 +1065,7 @@ const BASE = "__BASE__";
 const $ = id => document.getElementById(id);
 const fmt = (v, suf="", d=1) => (v==null||isNaN(v)) ? "—" : (typeof v==="number" ? v.toFixed(d) : v)+suf;
 const fmtAge = s => s<60?s+"s":s<3600?Math.floor(s/60)+"m":Math.floor(s/3600)+"h";
-const fmtTime = ts => { const d=new Date(ts*1000); return d.toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"}); };
+const fmtTime = ts => new Date(ts*1000).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
 
 function toast(msg, kind="info"){
   const t=$("toast"); t.textContent=msg; t.className="toast "+kind+" show";
@@ -1074,19 +1078,19 @@ async function api(path, opts={}){
   return r.json();
 }
 
-// ── Tab switching ──
+// Tab switching
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
   document.querySelectorAll(".tab-content").forEach(x=>x.classList.remove("active"));
   b.classList.add("active");
   $("t-"+b.dataset.tab).classList.add("active");
-  if(b.dataset.tab==="graficas") loadCharts();
+  if(b.dataset.tab==="charts") loadCharts();
   if(b.dataset.tab==="diag") loadDiag();
-  if(b.dataset.tab==="controles") buildSliders();
+  if(b.dataset.tab==="controls") buildSliders();
   if(b.dataset.tab==="optimizer") loadDecisions();
 });
 
-// ── Estado ──
+// Overview
 const MODE_CLASS = {heat:"bg-g",cool:"bg-a",auto:"bg-y",off:"bg-m",unknown:"bg-m"};
 const ACTION_CLASS = {heating:"bg-g",cooling:"bg-a",idle:"bg-m",off:"bg-m",unknown:"bg-m"};
 
@@ -1102,43 +1106,40 @@ async function loadState(){
     $("hvac-action").className = "action-pill "+(ACTION_CLASS[s.hvac_action]||"bg-m");
     $("outside").textContent = fmt(s.outside_temp, "°C");
     if(!$("setp-input").dataset.touched) $("setp-input").value = s.setpoint_actual || s.setpoint_manual || "";
-    // KPI cards
     const k = $("kpis"); k.innerHTML="";
     [
       ["ΔT", fmt(s.delta_t, " K"), s.delta_t==null?"":"y"],
       ["COP", fmt(s.cop, "", 2), s.cop>3?"g":s.cop>2?"y":"r"],
-      ["Modulación", fmt(s.compressor_modulation, " %", 0), "p"],
-      ["P. eléctrica", fmt(s.power_in, " kW", 2), "y"],
-      ["P. térmica", fmt(s.power_out, " kW", 2), "g"],
-      ["Caudal", fmt(s.water_throughput, " L/h", 0), "a"],
-      ["T. impulsión", fmt(s.supply_temp, "°C"), "o"],
-      ["T. retorno", fmt(s.return_temp, "°C"), "a"],
-      ["Horas total", fmt(s.hours_total, " h", 0), ""],
+      ["Modulation", fmt(s.compressor_modulation, " %", 0), "p"],
+      ["Electric power", fmt(s.power_in, " kW", 2), "y"],
+      ["Thermal power", fmt(s.power_out, " kW", 2), "g"],
+      ["Flow rate", fmt(s.water_throughput, " L/h", 0), "a"],
+      ["Supply temp", fmt(s.supply_temp, "°C"), "o"],
+      ["Return temp", fmt(s.return_temp, "°C"), "a"],
+      ["Total hours", fmt(s.hours_total, " h", 0), ""],
     ].forEach(([lbl,val,kind])=>{
       const div=document.createElement("div"); div.className="card";
       div.innerHTML=`<div class="metric ${kind||""}">${val}</div><div class="label">${lbl}</div>`;
       k.appendChild(div);
     });
-    // Health banner
     const hb = $("health-banner");
     if(!s.health.ok && s.health.reasons.length){
       hb.className="health-card warn";
       hb.innerHTML="⚠ "+s.health.reasons.map(r=>`<div>${r}</div>`).join("");
     } else {
       hb.className="health-card ok";
-      hb.innerHTML="✓ Sistema operativo · MQTT "+(s.mqtt_connected?"conectado":"desconectado");
+      hb.innerHTML="✓ System healthy · MQTT "+(s.mqtt_connected?"connected":"disconnected");
     }
-    // Optimizer status card
     $("opt-status").innerHTML =
-      `<div>Control activo: <span class="badge ${s.optimizer_enabled?'bg-g':'bg-m'}">${s.optimizer_enabled?'ENCENDIDO':'APAGADO'}</span></div>`+
-      `<div class="sub" style="margin-top:.3rem">Curva dinámica de impulsión, conmutación estacional y enforce de seguridad. Ver pestaña Optimizer para historial.</div>`;
+      `<div>Active control: <span class="badge ${s.optimizer_enabled?'bg-g':'bg-m'}">${s.optimizer_enabled?'ON':'OFF'}</span></div>`+
+      `<div class="sub" style="margin-top:.3rem">Dynamic flow-temperature curve, seasonal switchover and safety enforcement. See Optimizer tab for the decision log.</div>`;
     $("opt-toggle").checked = !!s.optimizer_enabled;
-  } catch(e){ toast("Error cargando estado: "+e.message, "err"); }
+  } catch(e){ toast("State load failed: "+e.message, "err"); }
 }
 
 async function setSetpoint(){
   const v = parseFloat($("setp-input").value);
-  if(isNaN(v)) return toast("Setpoint inválido","err");
+  if(isNaN(v)) return toast("Invalid setpoint","err");
   try{
     const r = await api("/api/setpoint", {method:"POST", body:JSON.stringify({target_c:v})});
     toast("Setpoint → "+r.value+"°C", "ok");
@@ -1150,23 +1151,23 @@ $("setp-input").addEventListener("input", e=>e.target.dataset.touched="1");
 
 async function setMode(mode){
   try{ await api("/api/mode", {method:"POST", body:JSON.stringify({mode})});
-       toast("Modo → "+mode.toUpperCase(),"ok"); setTimeout(loadState,800);
+       toast("Mode → "+mode.toUpperCase(),"ok"); setTimeout(loadState,800);
   } catch(e){ toast("Error: "+e.message,"err"); }
 }
 
-// ── Controles — sliders dinámicos ──
+// Controls — dynamic sliders
 const SETPOINT_DEFS = [
-  ["z1ManualTemp", "Manual",   12, 28, 0.5],
-  ["z1DayTemp",    "Día",      14, 26, 0.5],
-  ["z1NightTemp",  "Noche",    16, 26, 0.5],
-  ["z1HolidayTemp","Vacaciones",5, 22, 0.5],
-  ["z1CoolingTemp","Cooling",  16, 26, 0.5],
+  ["z1ManualTemp",  "Manual",       12, 28, 0.5],
+  ["z1DayTemp",     "Day",          14, 26, 0.5],
+  ["z1NightTemp",   "Night",        16, 26, 0.5],
+  ["z1HolidayTemp", "Holiday",       5, 22, 0.5],
+  ["z1CoolingTemp", "Cooling",      16, 26, 0.5],
 ];
 const FLOW_DEFS = [
-  ["Hc1MaxFlowTempDesired", "Max impulsión",      25, 40, 0.5],
-  ["Hc1MinFlowTempDesired", "Min impulsión",      14, 30, 0.5],
-  ["Hc1SummerTempLimit",    "Límite verano",      12, 28, 0.5],
-  ["ContinuosHeating",      "Umbral calor cont.", -26, 15, 0.5],
+  ["Hc1MaxFlowTempDesired", "Max flow temp",            25, 40, 0.5],
+  ["Hc1MinFlowTempDesired", "Min flow temp",            14, 30, 0.5],
+  ["Hc1SummerTempLimit",    "Summer temp limit",        12, 28, 0.5],
+  ["ContinuosHeating",      "Continuous heating temp",  -26, 15, 0.5],
 ];
 async function buildSliders(){
   const s = await api("/api/state");
@@ -1199,7 +1200,7 @@ async function buildSliders(){
   render($("flow-sliders"), FLOW_DEFS);
 }
 
-// ── Optimizer ──
+// Optimizer
 async function toggleOptimizer(){
   const enable = $("opt-toggle").checked;
   try{ await api("/api/optimizer", {method:"POST", body:JSON.stringify({enable})});
@@ -1210,25 +1211,31 @@ async function loadDecisions(){
   try{
     const list = await api("/api/decisions?limit=80");
     const tb = $("dec-tbody"); tb.innerHTML="";
-    if(!list.length){ tb.innerHTML='<tr><td colspan="3" class="empty">Sin decisiones aún.</td></tr>'; return; }
+    if(!list.length){ tb.innerHTML='<tr><td colspan="3" class="empty">No decisions logged yet.</td></tr>'; return; }
     list.slice().reverse().forEach(d=>{
       const tr = document.createElement("tr");
       tr.innerHTML = `<td class="dec-time">${fmtTime(d.ts)}</td><td><span class="badge bg-a">${d.kind}</span></td><td>${d.reason}</td>`;
       tb.appendChild(tr);
     });
-  } catch(e){ toast("Error decisiones: "+e.message,"err"); }
+  } catch(e){ toast("Decisions load failed: "+e.message,"err"); }
 }
 
-// ── Gráficas ──
-const CHARTS = {};
+// Charts — Chart.js with a guard against the "canvas in use" race
+let CHARTS_BUSY = false;
 async function loadSeries(series, hours){
   const data = await api(`/api/history?series=${series}&hours=${hours}`);
   return data.map(p=>({x: p.ts*1000, y: p.value}));
 }
-function mkChart(canvasId, datasets){
-  if(CHARTS[canvasId]) CHARTS[canvasId].destroy();
+function destroyChart(canvasId){
+  // Use Chart.js' own global registry so we catch any chart attached to this
+  // canvas, even one we never tracked in our local CHARTS map.
+  const existing = Chart.getChart(canvasId);
+  if (existing) existing.destroy();
+}
+function mkChart(canvasId, datasets, yUnit){
+  destroyChart(canvasId);
   const ctx = $(canvasId).getContext("2d");
-  CHARTS[canvasId] = new Chart(ctx, {
+  return new Chart(ctx, {
     type: "line",
     data: { datasets },
     options: {
@@ -1236,17 +1243,20 @@ function mkChart(canvasId, datasets){
       animation: false, parsing: false,
       plugins: { legend: { labels: { color: "#94a3b8", font:{size:11} } } },
       scales: {
-        x: { type:"time", time:{ unit: "hour" }, ticks:{color:"#94a3b8",font:{size:10}}, grid:{color:"rgba(148,163,184,.1)"} },
-        y: { ticks:{color:"#94a3b8",font:{size:10}}, grid:{color:"rgba(148,163,184,.1)"} }
+        x: { type:"time", time:{ unit:"hour", tooltipFormat:"PP HH:mm" },
+             ticks:{color:"#94a3b8",font:{size:10}}, grid:{color:"rgba(148,163,184,.1)"} },
+        y: { ticks:{color:"#94a3b8",font:{size:10}, callback:v => v+(yUnit||"")},
+             grid:{color:"rgba(148,163,184,.1)"} }
       }
     }
   });
-  $(canvasId).parentNode.style.height = "240px";
 }
 async function loadCharts(){
+  if (CHARTS_BUSY) return;
+  CHARTS_BUSY = true;
   const h = parseInt($("chart-window").value);
   try{
-    const [room, set, out, supply, ret, dt, cop, pin, pout] = await Promise.all([
+    const [room, setp, out, supply, ret, dt, cop, pin, pout] = await Promise.all([
       loadSeries("room_temp", h),
       loadSeries("setpoint_actual", h),
       loadSeries("outside_temp", h),
@@ -1258,27 +1268,31 @@ async function loadCharts(){
       loadSeries("power_out", h),
     ]);
     mkChart("ch-temps", [
-      { label:"Ambiente", data: room, borderColor:"#38bdf8", backgroundColor:"transparent", tension:.3, pointRadius:0 },
-      { label:"Setpoint", data: set, borderColor:"#fbbf24", backgroundColor:"transparent", tension:.3, pointRadius:0, borderDash:[4,4] },
-      { label:"Exterior", data: out, borderColor:"#a78bfa", backgroundColor:"transparent", tension:.3, pointRadius:0 },
-      { label:"Impulsión", data: supply, borderColor:"#fb923c", backgroundColor:"transparent", tension:.3, pointRadius:0 },
-      { label:"Retorno", data: ret, borderColor:"#4ade80", backgroundColor:"transparent", tension:.3, pointRadius:0 },
-    ]);
-    mkChart("ch-dt", [{ label:"ΔT", data: dt, borderColor:"#a78bfa", backgroundColor:"rgba(167,139,250,.15)", fill:true, tension:.3, pointRadius:0 }]);
+      { label:"Room",     data:room,   borderColor:"#38bdf8", backgroundColor:"transparent", tension:.3, pointRadius:0 },
+      { label:"Setpoint", data:setp,   borderColor:"#fbbf24", backgroundColor:"transparent", tension:.3, pointRadius:0, borderDash:[4,4] },
+      { label:"Outdoor",  data:out,    borderColor:"#a78bfa", backgroundColor:"transparent", tension:.3, pointRadius:0 },
+      { label:"Supply",   data:supply, borderColor:"#fb923c", backgroundColor:"transparent", tension:.3, pointRadius:0 },
+      { label:"Return",   data:ret,    borderColor:"#4ade80", backgroundColor:"transparent", tension:.3, pointRadius:0 },
+    ], "°C");
+    mkChart("ch-dt",
+      [{ label:"ΔT", data:dt, borderColor:"#a78bfa", backgroundColor:"rgba(167,139,250,.15)", fill:true, tension:.3, pointRadius:0 }],
+      " K");
     mkChart("ch-pow", [
-      { label:"Eléctrica", data: pin, borderColor:"#fbbf24", backgroundColor:"transparent", tension:.3, pointRadius:0 },
-      { label:"Térmica", data: pout, borderColor:"#4ade80", backgroundColor:"transparent", tension:.3, pointRadius:0 },
-    ]);
-    mkChart("ch-cop", [{ label:"COP", data: cop, borderColor:"#4ade80", backgroundColor:"rgba(74,222,128,.15)", fill:true, tension:.3, pointRadius:0 }]);
-  } catch(e){ toast("Error gráficas: "+e.message, "err"); }
+      { label:"Electric", data:pin,  borderColor:"#fbbf24", backgroundColor:"transparent", tension:.3, pointRadius:0 },
+      { label:"Thermal",  data:pout, borderColor:"#4ade80", backgroundColor:"transparent", tension:.3, pointRadius:0 },
+    ], " kW");
+    mkChart("ch-cop",
+      [{ label:"COP", data:cop, borderColor:"#4ade80", backgroundColor:"rgba(74,222,128,.15)", fill:true, tension:.3, pointRadius:0 }]);
+  } catch(e){ toast("Chart load failed: "+e.message, "err"); }
+  finally { CHARTS_BUSY = false; }
 }
 
-// ── Diagnóstico ──
+// Diagnostics
 async function loadDiag(){
   try{
     const msgs = await api("/api/messages");
     const tb = $("diag-tbody"); tb.innerHTML="";
-    if(!msgs.length){ tb.innerHTML='<tr><td colspan="4" class="empty">Sin mensajes ebusd aún.</td></tr>'; return; }
+    if(!msgs.length){ tb.innerHTML='<tr><td colspan="4" class="empty">No ebusd messages yet.</td></tr>'; return; }
     msgs.forEach(m=>{
       const ageClass = m.age_seconds<120?"diag-fresh":m.age_seconds<600?"diag-old":"diag-stale";
       const fields = Object.entries(m.fields).map(([k,v])=>`<span class="badge bg-m">${k}=${v}</span>`).join(" ");
@@ -1286,15 +1300,15 @@ async function loadDiag(){
       tr.innerHTML = `<td>${m.circuit}</td><td>${m.msg}</td><td>${fields}</td><td class="${ageClass}">${fmtAge(m.age_seconds)}</td>`;
       tb.appendChild(tr);
     });
-  } catch(e){ toast("Error diag: "+e.message,"err"); }
+  } catch(e){ toast("Diagnostics load failed: "+e.message,"err"); }
 }
 async function forceRead(){
-  try{ await api("/api/force_read", {method:"POST"}); toast("Force-read disparado","info");
+  try{ await api("/api/force_read", {method:"POST"}); toast("Force-read dispatched","info");
        setTimeout(loadDiag, 6000);
   } catch(e){ toast("Error: "+e.message,"err"); }
 }
 
-// ── Boot ──
+// Boot
 loadState();
 setInterval(loadState, 5000);
 setInterval(()=>{ if(document.querySelector(".tab.active").dataset.tab==="optimizer") loadDecisions(); }, 8000);

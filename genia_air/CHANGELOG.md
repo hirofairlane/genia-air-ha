@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.4 — 2026-06-13
+
+- UI fully translated to English (the source-of-truth language for the
+  project — Spanish copy belongs in a future translations layer).
+- Fix Chart.js "Canvas is already in use" error: use `Chart.getChart()`
+  to find any chart already attached to the canvas and destroy it
+  before rendering, instead of relying on our local CHARTS map.
+- Add a CHARTS_BUSY guard so two `loadCharts()` calls (e.g. tab click
+  + manual refresh) cannot overlap.
+- Chart container heights set via CSS (`.chart-wrap`) instead of being
+  patched in JS each render.
+- Load `chartjs-adapter-date-fns` so the time-scale X axis renders.
+
 ## 0.1.3 — 2026-06-13
 
 - `run.sh` now uses `#!/usr/bin/with-contenv sh` — the HA base-image s6
