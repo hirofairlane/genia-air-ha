@@ -1,0 +1,50 @@
+# ebusd configuration for Vaillant HMU00 (address 08)
+# Extracted from working Docker container john30/ebusd:v23.1
+# Device: MF=Vaillant;ID=HMU00;SW=0901;HW=5103
+# Backup date: 2026-05-03
+w,hmu,clearerrorhistory,Clear error history,,08,b503,0201,cleared,s,UCH,0=no;1=yes,,
+r5,hmu,ConsumptionThisYear10,,,08,b516,1a020a00,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear11,,,08,b516,1a020b00,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear12,,,08,b516,1a020c00,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear1,,,08,b516,1a020100,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear2,,,08,b516,1a020200,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear3,,,08,b516,1a020300,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear4,,,08,b516,1a020400,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear5,,,08,b516,1a020500,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear6,,,08,b516,1a020600,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear7,,,08,b516,1a020700,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear8,,,08,b516,1a020800,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionThisYear9,,,08,b516,1a020900,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,ConsumptionTotal,,,08,b516,1802,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,CurrentCompressorUtil,,,08,b51a,05ff3225,,s,IGN:3,,,,,s,D1B,,%,current compressor utilization in percent
+r5,hmu,CurrentConsumedPower,,,08,b51a,05ff3224,,s,IGN:3,,,,,s,D1B,10,kW,current power consumption of the heatpump in kW
+r5,hmu,currenterror,Current errors,,08,b503,0001,error,s,UIN,,,error number,error,s,UIN,,,error number,error,s,UIN,,,error number,error,s,UIN,,,error number,error,s,UIN,,,error number
+r5,hmu,CurrentYieldPower,,,08,b51a,05ff3223,,s,IGN:3,,,,,s,D1B,10,kW,current yielded energy from the environment in kW
+r5,hmu,DateTime,Date Time,,08,b504,00,dcfstate,s,UCH,0=nosignal;1=ok;2=sync;3=valid,,DCF receiver state,btime,s,BTI,,,time,bdate,s,BDA,,,date,temp2,s,D2B,,°C,temperature
+r5,hmu,EnergyCool,,,08,b51a,05ff3201,,s,IGN:3,,,,energy,s,UIN,,kWh,
+r5,hmu,EnergyHc,,,08,b51a,05ff3200,,s,IGN:3,,,,energy,s,UIN,,kWh,
+r5,hmu,errorhistory,Error history,,08,b503,0101,index,m,UCH,,,,status,s,UCH,,,Status,time2,s,VTM,,,time,date,s,HDA:3,,,date,error,s,UIN,,,error number
+r5,hmu,Hours,,,08,b51a,05ff3240,,s,IGN:3,,,,energy,s,UIN,,kWh,
+r5,hmu,HoursCool,,,08,b51a,05ff3243,,s,IGN:3,,,,energy,s,UIN,,kWh,
+r5,hmu,HoursHc,,,08,b51a,05ff3241,,s,IGN:3,,,,energy,s,UIN,,kWh,
+uw,hmu,SetMode,Operation Mode,,08,b510,00,hcmode,m,UCH,0=auto;1=off;2=water,,boiler mode,flowtempdesired,m,D1C,,°C,temperature,hwctempdesired,m,D1C,,°C,temperature,hwcflowtempdesired,m,UCH,,°C,temperature,,m,IGN:1,,,,disablehc,m,BI0:1,,,,disablehwctapping,m,BI1:1,,,,disablehwcload,m,BI2:1,,,,,m,IGN:1,,,,remoteControlHcPump,m,BI0:1,,,,releaseBackup,m,BI1:1,,,,releaseCooling,m,BI2:1,,,
+r,hmu,State,,,08,b511,07,energy,s,UCH,,,,energy,s,UIN,,kWh,,onoff,s,UCH,0=off;1=on,,,state,s,UCH,1=ready;9=heating;11=error;17=cooling;129=heating_water,,
+r,hmu,Status01,Vorlauftemperatur/Rücklauftemperatur/Aussentemperatur/WW Temperatur/Speichertemperatur/Pumpenstatus,,08,b511,01,temp1,s,D1C,,°C,temperature,temp1,s,D1C,,°C,temperature,temp2,s,D2B,,°C,temperature,temp1,s,D1C,,°C,temperature,temp1,s,D1C,,°C,temperature,pumpstate,s,UCH,0=off;1=on;2=overrun;4=hwc,,pump state
+r5,hmu,Status02,Betriebsart/Maximaltemperatur/ReglerCurrentTEMP/Maximaltemperatur/ReglerCurrentTemp,,08,b511,02,hwcmode,s,UCH,0=disabled;1=on;2=off;3=auto,,hot water mode,temp0,s,UCH,,°C,temperature,temp1,s,D1C,,°C,temperature,temp0,s,UCH,,°C,temperature,temp1,s,D1C,,°C,temperature
+r5,hmu,Status16,Outside temperature,,08,b504,16,temp,s,D2C,,°C,temperature
+r5,hmu,Status,Status,,08,b511,03,temp,s,D2C,,°C,temperature,press,s,FLT,,bar,pressure,press,s,FLT,,bar,pressure,hcmode2,s,UCH,0=off;3=heat;4=water,,boiler mode,,s,HEX:1,,,
+uw,hmu,StatusCirPump,Status circulation pump,,08,b512,00,,m,UCH,0=off;100=on,,
+r5,hmu,WaterThroughput,,,08,b514,052b03ffff,,s,IGN:2,,,,,s,UIN,,l/h,current heating water flow rate in liters per hour
+r5,hmu,YieldThisYear10,,,08,b516,1a010a00,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear11,,,08,b516,1a010b00,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear12,,,08,b516,1a010c00,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear1,,,08,b516,1a010100,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear2,,,08,b516,1a010200,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear3,,,08,b516,1a010300,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear4,,,08,b516,1a010400,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear5,,,08,b516,1a010500,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear6,,,08,b516,1a010600,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear7,,,08,b516,1a010700,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear8,,,08,b516,1a010800,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldThisYear9,,,08,b516,1a010900,,s,IGN:1,,,,month,s,D1B,,,,,s,IGN:1,,,,energy,s,UIN,,kWh,
+r5,hmu,YieldTotal,,,08,b516,1801,,s,IGN:1,,,,energy,s,UIN,,kWh,

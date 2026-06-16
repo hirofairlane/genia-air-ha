@@ -3,11 +3,11 @@
 Standalone Home Assistant add-on to **control and optimize** a Vaillant
 Genia Air heat pump.
 
-This add-on is autonomous: it ships with its own UI, its own history
-database and its own optimizer. The only external dependency is the
-[ebusd add-on by LukasGrebe](https://github.com/LukasGrebe/ha-addons)
-publishing eBUS messages to MQTT (the standard setup for talking to a
-Vaillant heat pump from Home Assistant).
+This add-on is **fully self-contained**: it bundles the
+[`ebusd`](https://github.com/john30/ebusd) daemon, the Vaillant message
+definitions, its own UI, its own history database and its own optimizer.
+The only external dependency is the MQTT integration (Mosquitto or
+equivalent) that Home Assistant already needs.
 
 ## Screenshots
 
@@ -40,28 +40,35 @@ Vaillant heat pump from Home Assistant).
 
 ## Installation
 
-1. Install and start the
-   [LukasGrebe ebusd add-on](https://github.com/LukasGrebe/ha-addons)
-   so eBUS messages reach MQTT.
-2. In Home Assistant: **Settings → Add-ons → Add-on Store → ⋯ → Repositories**
+You need an eBUS adapter wired to your heat pump and reachable over the
+network or USB. Most users have a network-attached
+[eBUS Adapter Shield 3](https://adapter.ebusd.eu/) or an ESP-based
+adapter that exposes the bus on a TCP port (default `9999`).
+
+1. In Home Assistant: **Settings → Add-ons → Add-on Store → ⋯ → Repositories**
    and add `https://github.com/hirofairlane/genia-air-ha`.
-3. Install **Vaillant Genia Air**. Defaults work for a typical single-zone
-   underfloor-heating setup. Start the add-on.
-4. Click **Open Web UI**, or use the **Genia Air** entry that appears in
-   the Home Assistant sidebar.
+2. Install **Vaillant Genia Air**.
+3. Set `ebus_device` in the configuration tab to your adapter, e.g.:
+   - `ens:192.168.1.171:9999` for a network adapter (ens = enhanced),
+   - `enh:192.168.1.171:9999` for an old-style network adapter,
+   - `/dev/ttyUSB0` for a USB-attached adapter.
+4. Start the add-on. Click **Open Web UI**, or use the **Genia Air**
+   entry that appears in the Home Assistant sidebar.
 
 ## Configuration
 
 | Option | Default | Notes |
 |---|---|---|
-| `topic_prefix` | `ebusd` | Must match the prefix configured in the ebusd add-on |
-| `zone_count` | `1` | v0.1 controls zone 1 only |
+| `ebus_device` | `ens:192.168.1.171:9999` | eBUS adapter URL (`ens:`, `enh:`, `/dev/tty*`) |
+| `topic_prefix` | `ebusd` | MQTT topic prefix used by ebusd |
+| `zone_count` | `1` | v0.2 controls zone 1 only |
 | `optimize_flow_temp` | `true` | Master switch for the optimizer |
 | `target_delta_t` | `5.0` K | Heating-side ΔT target used for anomaly alerts |
 | `min_flow_temp_safe` | `14.0` °C | Anti-condensation floor in cooling mode |
 | `max_flow_temp_safe` | `35.0` °C | Underfloor heating ceiling |
 | `summer_temp_limit` | `19.0` °C | Heat ↔ cool seasonal switchover pivot |
 | `optimize_cycle_minutes` | `5` | How often the optimizer evaluates |
+| `ebusd_log_level` | `notice` | `error`, `notice`, `info`, `debug` |
 
 ## Troubleshooting
 

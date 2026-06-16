@@ -1,0 +1,317 @@
+# ebusd configuration for Vaillant CTLS2 (address 15)
+# Extracted from working Docker container john30/ebusd:v23.1
+# Device: MF=Vaillant;ID=CTLS2;SW=0509;HW=1304
+# Backup date: 2026-05-03
+r5,ctls2,AdaptHeatCurve,adaptive heat curve,,15,b524,020000001400,,s,IGN:4,,,,yesno,s,UCH,0=no;1=yes,,automatic correction of configured heat curve
+w,ctls2,AdaptHeatCurve,adaptive heat curve,,15,b524,020100001400,yesno,m,UCH,0=no;1=yes,,automatic correction of configured heat curve
+r5,ctls2,BankHolidayEndPeriod,bank holiday end period,,15,b524,020000008400,,s,IGN:4,,,,hto,s,HDA:3,,,end date of bank holidays
+w,ctls2,BankHolidayEndPeriod,bank holiday end period,,15,b524,020100008400,hto,m,HDA:3,,,end date of bank holidays
+r5,ctls2,BankHolidayStartPeriod,bank holiday start period,,15,b524,020000008300,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of bank holidays
+w,ctls2,BankHolidayStartPeriod,bank holiday start period,,15,b524,020100008300,hfrom,m,HDA:3,,,start date of bank holidays
+w,ctls2,clearerrorhistory,Clear error history,,15,b503,0201,cleared,s,UCH,0=no;1=yes,,
+r5,ctls2,ContinuosHeating,continuos heating,,15,b524,020000000200,,s,IGN:4,,,,tempv,s,EXP,,°C,"-26=off, when the outside temperature falls below this threshold temperature the continuous heating function is started (off <=> function is disabled)"
+w,ctls2,ContinuosHeating,continuos heating,,15,b524,020100000200,tempv,m,EXP,,°C,"-26=off, when the outside temperature falls below this threshold temperature the continuous heating function is started (off <=> function is disabled)"
+r5,ctls2,currenterror,Current errors,,15,b503,0001,error,s,UIN,,,error number,error,s,UIN,,,error number,error,s,UIN,,,error number,error,s,UIN,,,error number,error,s,UIN,,,error number
+r5,ctls2,CylinderChargeHyst,hysteresis cylinder charge,,15,b524,020000002700,,s,IGN:4,,,,calibrationv,s,EXP,,K,Hysterese Speicherladung
+w,ctls2,CylinderChargeHyst,hysteresis cylinder charge,,15,b524,020100002700,calibrationv,m,EXP,,K,Hysterese Speicherladung
+r5,ctls2,CylinderChargeOffset,offset cylinder charge,,15,b524,020000002900,,s,IGN:4,,,,calibrationv,s,EXP,,K,Speicherlad. Offset
+w,ctls2,CylinderChargeOffset,offset cylinder charge,,15,b524,020100002900,calibrationv,m,EXP,,K,Speicherlad. Offset
+r5,ctls2,Date,date,,15,b524,020000003400,,s,IGN:4,,,,date,s,HDA:3,,,Aktuelles Datum
+w,ctls2,Date,date,,15,b524,020100003400,date,m,HDA:3,,,Aktuelles Datum
+r5,ctls2,DisplayedOutsideTemp,outside temperature,,15,b524,020000007300,,s,IGN:4,,,,tempv,s,EXP,,°C,Außentemperatur
+r5,ctls2,errorhistory,Error history,,15,b503,0101,index,m,UCH,,,,status,s,UCH,,,Status,time2,s,VTM,,,time,date,s,HDA:3,,,date,error,s,UIN,,,error number
+r5,ctls2,FrostOverRideTime,frost delay time,,15,b524,020000000300,,s,IGN:4,,,,hoursum2,s,UIN,,h,delay before frost protection is activated
+w,ctls2,FrostOverRideTime,frost delay time,,15,b524,020100000300,hoursum2,m,UIN,,h,delay before frost protection is activated
+r5,ctls2,GlobalSystemOff,Global System OFF,,15,b524,020000000700,,s,IGN:4,,,,yesno,s,UCH,0=no;1=yes,,For switching system off
+w,ctls2,GlobalSystemOff,Global System OFF,,15,b524,020100000700,yesno,m,UCH,0=no;1=yes,,For switching system off
+r5,ctls2,Hc1ActualFlowTempDesired,ActualFlowTempDesired heating circuit 1,,15,b524,020002000700,,s,IGN:4,,,,tempv,s,EXP,,°C,current flow temperature setpoint of Hc1
+r5,ctls2,Hc1AutoOffMode,AutoOffMode heating circuit 1,,15,b524,020002000e00,,s,IGN:4,,,,offmode,s,UIN,0=eco;1=night,,operation of Hc1 during the lowering time; no influence if room temperature modulation is set to thermostat
+w,ctls2,Hc1AutoOffMode,AutoOffMode heating circuit 1,,15,b524,020102000e00,offmode,m,UIN,0=eco;1=night,,operation of Hc1 during the lowering time; no influence if room temperature modulation is set to thermostat
+r5,ctls2,Hc1CircuitType,CircuitType heating circuit 1,,15,b524,020002000200,,s,IGN:4,,,,mctype,s,UCH,0=inactive;1=mixer;2=fixed;3=hwc;4=returnincr;5=pool,,mixer type,,s,IGN:1,,,
+r5,ctls2,Hc1ExcessTemp,ExcessTemp heating circuit 1,,15,b524,020002000b00,,s,IGN:4,,,,calibrationv,s,EXP,,K,excess temperature of Hc1 (flow temperature's setpoint is increased by this value to keep the mixing valve in its control range)
+w,ctls2,Hc1ExcessTemp,ExcessTemp heating circuit 1,,15,b524,020102000b00,calibrationv,m,EXP,,K,excess temperature of Hc1 (flow temperature's setpoint is increased by this value to keep the mixing valve in its control range)
+r5,ctls2,Hc1FlowTemp,FlowTemp heating circuit 1,,15,b524,020002000800,,s,IGN:4,,,,tempv,s,EXP,,°C,current flow temperature of Hc1
+r5,ctls2,Hc1HeatCurve,HeatCurve heating circuit 1,,15,b524,020002000f00,,s,IGN:4,,,,,s,EXP,,,heating curve of Hc1
+w,ctls2,Hc1HeatCurve,HeatCurve heating circuit 1,,15,b524,020102000f00,,m,EXP,,,heating curve of Hc1
+r5,ctls2,Hc1HeatCurveAdaption,HeatCurveAdaption heating circuit 1,,15,b524,020002001c00,,s,IGN:4,,,,,s,EXP,,,adaption applied to heating curve of Hc1
+r5,ctls2,Hc1MaxFlowTempDesired,MaxFlowTempDesired heating circuit 1,,15,b524,020002001000,,s,IGN:4,,,,tempv,s,EXP,,°C,maximum flow temperature setpoint (end emphasis) of Hc1
+w,ctls2,Hc1MaxFlowTempDesired,MaxFlowTempDesired heating circuit 1,,15,b524,020102001000,tempv,m,EXP,,°C,maximum flow temperature setpoint (end emphasis) of Hc1
+r5,ctls2,Hc1MinFlowTempDesired,MinFlowTempDesired heating circuit 1,,15,b524,020002001200,,s,IGN:4,,,,tempv,s,EXP,,°C,minimum flow temperature setpoint (end emphasis) of Hc1
+w,ctls2,Hc1MinFlowTempDesired,MinFlowTempDesired heating circuit 1,,15,b524,020102001200,tempv,m,EXP,,°C,minimum flow temperature setpoint (end emphasis) of Hc1
+r5,ctls2,Hc1MixerMovement,MixerMovement heating circuit 1,,15,b524,020002001a00,,s,IGN:4,,,,,s,EXP,,,"status of mixer (<0 closing, >0 opening)"
+r5,ctls2,Hc1PumpStatus,PumpStatus heating circuit 1,,15,b524,020002001e00,,s,IGN:4,,,,,s,UIN,0=off;1=on,,pump status of zone 1
+w,ctls2,Hc1PumpStatus,PumpStatus heating circuit 1,,15,b524,020102001e00,,m,UIN,0=off;1=on,,pump status of zone 1
+r5,ctls2,Hc1RoomTempSwitchOn,RoomTempSwitchOn heating circuit 1,,15,b524,020002001500,,s,IGN:4,,,,rcmode,s,UIN,0=off;1=modulating;2=thermostat,,room temperature modulation of Hc1
+w,ctls2,Hc1RoomTempSwitchOn,RoomTempSwitchOn heating circuit 1,,15,b524,020102001500,rcmode,m,UIN,0=off;1=modulating;2=thermostat,,room temperature modulation of Hc1
+r5,ctls2,Hc1Status,Status heating circuit 1,,15,b524,020002001b00,,s,IGN:4,,,,,s,UCH,,,status of zone 1
+w,ctls2,Hc1Status,Status heating circuit 1,,15,b524,020102001b00,,m,UCH,,,status of zone 1
+r5,ctls2,Hc1SummerTempLimit,summer outside switchoff temperature heating circuit 1,,15,b524,020002001400,,s,IGN:4,,,,tempv,s,EXP,,°C,if outside temperature > summer limit => heating is OFF;applies to comfort and night setback setpoint
+w,ctls2,Hc1SummerTempLimit,summer outside switchoff temperature heating circuit 1,,15,b524,020102001400,tempv,m,EXP,,°C,if outside temperature > summer limit => heating is OFF;applies to comfort and night setback setpoint
+r5,ctls2,Hc2ActualFlowTempDesired,ActualFlowTempDesired heating circuit 2,,15,b524,020002010700,,s,IGN:4,,,,tempv,s,EXP,,°C,current flow temperature setpoint of Hc2
+r5,ctls2,Hc2AutoOffMode,AutoOffMode heating circuit 2,,15,b524,020002010e00,,s,IGN:4,,,,offmode,s,UIN,0=eco;1=night,,operation of Hc2 during the lowering time; no influence if room temperature modulation is set to thermostat
+w,ctls2,Hc2AutoOffMode,AutoOffMode heating circuit 2,,15,b524,020102010e00,offmode,m,UIN,0=eco;1=night,,operation of Hc2 during the lowering time; no influence if room temperature modulation is set to thermostat
+r5,ctls2,Hc2CircuitType,CircuitType heating circuit 2,,15,b524,020002010200,,s,IGN:4,,,,mctype,s,UCH,0=inactive;1=mixer;2=fixed;3=hwc;4=returnincr;5=pool,,mixer type,,s,IGN:1,,,
+r5,ctls2,Hc2ExcessTemp,ExcessTemp heating circuit 2,,15,b524,020002010b00,,s,IGN:4,,,,calibrationv,s,EXP,,K,excess temperature of Hc2 (flow temperature's setpoint is increased by this value to keep the mixing valve in its control range)
+w,ctls2,Hc2ExcessTemp,ExcessTemp heating circuit 2,,15,b524,020102010b00,calibrationv,m,EXP,,K,excess temperature of Hc2 (flow temperature's setpoint is increased by this value to keep the mixing valve in its control range)
+r5,ctls2,Hc2FlowTemp,FlowTemp heating circuit 2,,15,b524,020002010800,,s,IGN:4,,,,tempv,s,EXP,,°C,current flow temperature of Hc2
+r5,ctls2,Hc2HeatCurve,HeatCurve heating circuit 2,,15,b524,020002010f00,,s,IGN:4,,,,,s,EXP,,,heating curve of Hc2
+w,ctls2,Hc2HeatCurve,HeatCurve heating circuit 2,,15,b524,020102010f00,,m,EXP,,,heating curve of Hc2
+r5,ctls2,Hc2HeatCurveAdaption,HeatCurveAdaption heating circuit 2,,15,b524,020002011c00,,s,IGN:4,,,,,s,EXP,,,adaption applied to heating curve of Hc2
+r5,ctls2,Hc2MaxFlowTempDesired,MaxFlowTempDesired heating circuit 2,,15,b524,020002011000,,s,IGN:4,,,,tempv,s,EXP,,°C,maximum flow temperature setpoint (end emphasis) of Hc2
+w,ctls2,Hc2MaxFlowTempDesired,MaxFlowTempDesired heating circuit 2,,15,b524,020102011000,tempv,m,EXP,,°C,maximum flow temperature setpoint (end emphasis) of Hc2
+r5,ctls2,Hc2MinFlowTempDesired,MinFlowTempDesired heating circuit 2,,15,b524,020002011200,,s,IGN:4,,,,tempv,s,EXP,,°C,minimum flow temperature setpoint (end emphasis) of Hc2
+w,ctls2,Hc2MinFlowTempDesired,MinFlowTempDesired heating circuit 2,,15,b524,020102011200,tempv,m,EXP,,°C,minimum flow temperature setpoint (end emphasis) of Hc2
+r5,ctls2,Hc2MixerMovement,MixerMovement heating circuit 2,,15,b524,020002011a00,,s,IGN:4,,,,,s,EXP,,,"status of mixer (<0 closing, >0 opening)"
+r5,ctls2,Hc2PumpStatus,PumpStatus heating circuit 2,,15,b524,020002011e00,,s,IGN:4,,,,,s,UIN,,,pump status of zone 2
+w,ctls2,Hc2PumpStatus,PumpStatus heating circuit 2,,15,b524,020102011e00,,m,UIN,,,pump status of zone 2
+r5,ctls2,Hc2RoomTempSwitchOn,RoomTempSwitchOn heating circuit 2,,15,b524,020002011500,,s,IGN:4,,,,rcmode,s,UIN,0=off;1=modulating;2=thermostat,,room temperature modulation of Hc2
+w,ctls2,Hc2RoomTempSwitchOn,RoomTempSwitchOn heating circuit 2,,15,b524,020102011500,rcmode,m,UIN,0=off;1=modulating;2=thermostat,,room temperature modulation of Hc2
+r5,ctls2,Hc2Status,Status heating circuit 2,,15,b524,020002011b00,,s,IGN:4,,,,,s,UCH,,,status of zone 2
+w,ctls2,Hc2Status,Status heating circuit 2,,15,b524,020102011b00,,m,UCH,,,status of zone 2
+r5,ctls2,Hc2SummerTempLimit,summer outside switchoff temperature heating circuit 2,,15,b524,020002011400,,s,IGN:4,,,,tempv,s,EXP,,°C,if outside temperature > summer limit => heating is OFF;applies to comfort and night setback setpoint
+w,ctls2,Hc2SummerTempLimit,summer outside switchoff temperature heating circuit 2,,15,b524,020102011400,tempv,m,EXP,,°C,if outside temperature > summer limit => heating is OFF;applies to comfort and night setback setpoint
+r5,ctls2,Hc3ActualFlowTempDesired,ActualFlowTempDesired heating circuit 3,,15,b524,020002020700,,s,IGN:4,,,,tempv,s,EXP,,°C,current flow temperature setpoint of Hc3
+r5,ctls2,Hc3AutoOffMode,AutoOffMode heating circuit 3,,15,b524,020002020e00,,s,IGN:4,,,,offmode,s,UIN,0=eco;1=night,,operation of Hc3 during the lowering time; no influence if room temperature modulation is set to thermostat
+w,ctls2,Hc3AutoOffMode,AutoOffMode heating circuit 3,,15,b524,020102020e00,offmode,m,UIN,0=eco;1=night,,operation of Hc3 during the lowering time; no influence if room temperature modulation is set to thermostat
+r5,ctls2,Hc3CircuitType,CircuitType heating circuit 3,,15,b524,020002020200,,s,IGN:4,,,,mctype,s,UCH,0=inactive;1=mixer;2=fixed;3=hwc;4=returnincr;5=pool,,mixer type,,s,IGN:1,,,
+r5,ctls2,Hc3ExcessTemp,ExcessTemp heating circuit 3,,15,b524,020002020b00,,s,IGN:4,,,,calibrationv,s,EXP,,K,excess temperature of Hc3 (flow temperature's setpoint is increased by this value to keep the mixing valve in its control range)
+w,ctls2,Hc3ExcessTemp,ExcessTemp heating circuit 3,,15,b524,020102020b00,calibrationv,m,EXP,,K,excess temperature of Hc3 (flow temperature's setpoint is increased by this value to keep the mixing valve in its control range)
+r5,ctls2,Hc3FlowTemp,FlowTemp heating circuit 3,,15,b524,020002020800,,s,IGN:4,,,,tempv,s,EXP,,°C,current flow temperature of Hc3
+r5,ctls2,Hc3HeatCurve,HeatCurve heating circuit 3,,15,b524,020002020f00,,s,IGN:4,,,,,s,EXP,,,heating curve of Hc3
+w,ctls2,Hc3HeatCurve,HeatCurve heating circuit 3,,15,b524,020102020f00,,m,EXP,,,heating curve of Hc3
+r5,ctls2,Hc3HeatCurveAdaption,HeatCurveAdaption heating circuit 3,,15,b524,020002021c00,,s,IGN:4,,,,,s,EXP,,,adaption applied to heating curve of Hc3
+r5,ctls2,Hc3MaxFlowTempDesired,MaxFlowTempDesired heating circuit 3,,15,b524,020002021000,,s,IGN:4,,,,tempv,s,EXP,,°C,maximum flow temperature setpoint (end emphasis) of Hc3
+w,ctls2,Hc3MaxFlowTempDesired,MaxFlowTempDesired heating circuit 3,,15,b524,020102021000,tempv,m,EXP,,°C,maximum flow temperature setpoint (end emphasis) of Hc3
+r5,ctls2,Hc3MinFlowTempDesired,MinFlowTempDesired heating circuit 3,,15,b524,020002021200,,s,IGN:4,,,,tempv,s,EXP,,°C,minimum flow temperature setpoint (end emphasis) of Hc3
+w,ctls2,Hc3MinFlowTempDesired,MinFlowTempDesired heating circuit 3,,15,b524,020102021200,tempv,m,EXP,,°C,minimum flow temperature setpoint (end emphasis) of Hc3
+r5,ctls2,Hc3MixerMovement,MixerMovement heating circuit 3,,15,b524,020002021a00,,s,IGN:4,,,,,s,EXP,,,"status of mixer (<0 closing, >0 opening)"
+r5,ctls2,Hc3PumpStatus,PumpStatus heating circuit 3,,15,b524,020002021e00,,s,IGN:4,,,,,s,UIN,,,pump status of zone 3
+w,ctls2,Hc3PumpStatus,PumpStatus heating circuit 3,,15,b524,020102021e00,,m,UIN,,,pump status of zone 3
+r5,ctls2,Hc3RoomTempSwitchOn,RoomTempSwitchOn heating circuit 3,,15,b524,020002021500,,s,IGN:4,,,,rcmode,s,UIN,0=off;1=modulating;2=thermostat,,room temperature modulation of Hc3
+w,ctls2,Hc3RoomTempSwitchOn,RoomTempSwitchOn heating circuit 3,,15,b524,020102021500,rcmode,m,UIN,0=off;1=modulating;2=thermostat,,room temperature modulation of Hc3
+r5,ctls2,Hc3Status,Status heating circuit 3,,15,b524,020002021b00,,s,IGN:4,,,,,s,UCH,,,status of zone 2
+w,ctls2,Hc3Status,Status heating circuit 3,,15,b524,020102021b00,,m,UCH,,,status of zone 2
+r5,ctls2,Hc3SummerTempLimit,summer outside switchoff temperature heating circuit 3,,15,b524,020002021400,,s,IGN:4,,,,tempv,s,EXP,,°C,if outside temperature > summer limit => heating is OFF;applies to comfort and night setback setpoint
+w,ctls2,Hc3SummerTempLimit,summer outside switchoff temperature heating circuit 3,,15,b524,020102021400,tempv,m,EXP,,°C,if outside temperature > summer limit => heating is OFF;applies to comfort and night setback setpoint
+r5,ctls2,HcStorageTempBottom,hc storage temperature bottom,,15,b524,02000000a000,,s,IGN:4,,,,tempv,s,EXP,,°C,"Temp.fühler Hz, unten"
+r5,ctls2,HcStorageTempTop,hc storage temperature top,,15,b524,020000009f00,,s,IGN:4,,,,tempv,s,EXP,,°C,"Temp.fühler Hz, oben"
+r5,ctls2,HolidayEndPeriod,holiday end period,,15,b524,020000007200,,s,IGN:4,,,,hto,s,HDA:3,,,end date of holidays
+w,ctls2,HolidayEndPeriod,holiday end period,,15,b524,020100007200,hto,m,HDA:3,,,end date of holidays
+r5,ctls2,HolidayStartPeriod,holiday start period,,15,b524,020000007100,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of holidays
+w,ctls2,HolidayStartPeriod,holiday start period,,15,b524,020100007100,hfrom,m,HDA:3,,,start date of holidays
+r5,ctls2,HolidayTemp,holiday temperature,,15,b524,020000008200,,s,IGN:4,,,,tempv,s,EXP,,°C,holiday setpoint
+w,ctls2,HolidayTemp,holiday temperature,,15,b524,020100008200,tempv,m,EXP,,°C,holiday setpoint
+r5,ctls2,HwcBankHolidayEndPeriod,hwc bank holiday end period,,15,b524,020001000c00,,s,IGN:4,,,,hto,s,HDA:3,,,end date of bank holidays
+w,ctls2,HwcBankHolidayEndPeriod,hwc bank holiday end period,,15,b524,020101000c00,hto,m,HDA:3,,,end date of bank holidays
+r5,ctls2,HwcBankHolidayStartPeriod,hwc bank holiday start period,,15,b524,020001000b00,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of bank holidays
+w,ctls2,HwcBankHolidayStartPeriod,hwc bank holiday start period,,15,b524,020101000b00,hfrom,m,HDA:3,,,start date of bank holidays
+r5,ctls2,HwcFlowTemp,hwc flow temperature,,15,b524,020001000800,,s,IGN:4,,,,tempv,s,EXP,,°C,desired flow temp for Hwc
+r5,ctls2,HwcHolidayEndPeriod,hwc holiday end period,,15,b524,020001000a00,,s,IGN:4,,,,hto,s,HDA:3,,,end date of holidays
+w,ctls2,HwcHolidayEndPeriod,hwc holiday end period,,15,b524,020101000a00,hto,m,HDA:3,,,end date of holidays
+r5,ctls2,HwcHolidayStartPeriod,hwc holiday start period,,15,b524,020001000900,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of holidays
+w,ctls2,HwcHolidayStartPeriod,hwc holiday start period,,15,b524,020101000900,hfrom,m,HDA:3,,,start date of holidays
+r5,ctls2,HwcLockTime,hwc lock time,,15,b524,020000001800,,s,IGN:4,,,,minutes2,s,UIN,,min,Sperrzeit WW-Bedarf
+w,ctls2,HwcLockTime,hwc lock time,,15,b524,020100001800,minutes2,m,UIN,,min,Sperrzeit WW-Bedarf
+r5,ctls2,HwcMaxFlowTempDesired,hwc max flow temp desired,,15,b524,020000004600,,s,IGN:4,,,,tempv,s,EXP,,°C,maximum flow temperature setpoint of Hwc
+w,ctls2,HwcMaxFlowTempDesired,hwc max flow temp desired,,15,b524,020100004600,tempv,m,EXP,,°C,maximum flow temperature setpoint of Hwc
+r5,ctls2,HwcOpMode,hwc operation mode,,15,b524,020001000300,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode of Hwc
+w,ctls2,HwcOpMode,hwc operation mode,,15,b524,020101000300,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode of Hwc
+r5,ctls2,HwcParallelLoading,hwc parallel loading,,15,b524,020000000a00,,s,IGN:4,,,,onoff,s,UCH,0=off;1=on,,heating and hot water parallel
+w,ctls2,HwcParallelLoading,hwc parallel loading,,15,b524,020100000a00,onoff,m,UCH,0=off;1=on,,heating and hot water parallel
+r5,ctls2,HwcSFMode,hwc SF mode,,15,b524,020001000d00,,s,IGN:4,,,,sfmode,s,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+w,ctls2,HwcSFMode,hwc SF mode,,15,b524,020101000d00,sfmode,m,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+r5,ctls2,HwcStorageTemp,hwc storage temperature,,15,b524,020001000500,,s,IGN:4,,,,tempv,s,EXP,,°C,Speicheristtemperatur
+r5,ctls2,HwcStorageTempBottom,storage temperature bottom,,15,b524,020000009e00,,s,IGN:4,,,,tempv,s,EXP,,°C,"Temp.fühler WW, unten"
+r5,ctls2,HwcStorageTempTop,hwc storage temperature top,,15,b524,020000009d00,,s,IGN:4,,,,tempv,s,EXP,,°C,"Temp.fühler WW, oben"
+r5,ctls2,HwcTempDesired,hwc temperature desired,,15,b524,020001000400,,s,IGN:4,,,,tempv,s,EXP,,°C,setpoint of domestic hot water circuit
+w,ctls2,HwcTempDesired,hwc temperature desired,,15,b524,020101000400,tempv,m,EXP,,°C,setpoint of domestic hot water circuit
+r5,ctls2,HydraulicScheme,system schema,,15,b524,020000003600,,s,IGN:4,,,,,s,UIN,,,Systemschema
+w,ctls2,HydraulicScheme,system schema,,15,b524,020100003600,,m,UIN,,,Systemschema
+r5,ctls2,Installer1,installer name 1,,15,b524,020000006c00,,s,IGN:4,,,,shortname,s,STR:6,,,installer's name
+w,ctls2,Installer1,installer name 1,,15,b524,020100006c00,shortname,m,STR:6,,,installer's name
+r5,ctls2,Installer2,installer name 2,,15,b524,020000006d00,,s,IGN:4,,,,shortname,s,STR:6,,,installer's name
+w,ctls2,Installer2,installer name 2,,15,b524,020100006d00,shortname,m,STR:6,,,installer's name
+r5,ctls2,KeyCodeforConfigMenu,code for installer menu,,15,b524,020000007600,,s,IGN:4,,,,,s,UIN,,,000-999; code for the installer's menues
+w,ctls2,KeyCodeforConfigMenu,code for installer menu,,15,b524,020100007600,,m,UIN,,,000-999; code for the installer's menues
+r5,ctls2,MaintenanceDate,next maintenance,,15,b524,020000002c00,,s,IGN:4,,,,date,s,HDA:3,,,Datum nächste Wartung
+w,ctls2,MaintenanceDate,next maintenance,,15,b524,020100002c00,date,m,HDA:3,,,Datum nächste Wartung
+r5,ctls2,MaintenanceDue,maintenance due,,15,b524,020000009600,,s,IGN:4,,,,yesno,s,UCH,0=no;1=yes,,zeigt an ob die Wartung fällig ist
+r5,ctls2,ManualCooling,Manual cooling,,15,b524,020000000600,,s,IGN:4,,,,,s,UIN,,,"number of days of manual cooling (max. 99, 0=off, set temp via z1CoolingTemp)"
+w,ctls2,ManualCooling,Manual cooling,,15,b524,020100000600,,m,UIN,,,"number of days of manual cooling (max. 99, 0=off, set temp via z1CoolingTemp)"
+r5,ctls2,MaxCylinderChargeTime,maximale Speicherladezeit,,15,b524,020000001700,,s,IGN:4,,,,minutes2,s,UIN,,min,maximum cylinder charging time
+w,ctls2,MaxCylinderChargeTime,maximale Speicherladezeit,,15,b524,020100001700,minutes2,m,UIN,,min,maximum cylinder charging time
+r5,ctls2,MaxRoomHumidity,max room humidity,,15,b524,020000000e00,,s,IGN:4,,,,,s,UIN,,,maximum room humidity
+w,ctls2,MaxRoomHumidity,max room humidity,,15,b524,020100000e00,,m,UIN,,,maximum room humidity
+r5,ctls2,MultiRelaySetting,multifunction relay setting,,15,b524,020000004d00,,s,IGN:4,,,,mamode,s,UIN,0=circulation;1=dryer;2=zone;3=legiopump,,
+w,ctls2,MultiRelaySetting,multifunction relay setting,,15,b524,020100004d00,mamode,m,UIN,0=circulation;1=dryer;2=zone;3=legiopump,,
+r5,ctls2,OpMode,operation mode,,15,b524,020000007b00,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode of all/configured zone(s) matching OpModeEffect
+w,ctls2,OpMode,operation mode,,15,b524,020100007b00,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode of all/configured zone(s) matching OpModeEffect
+r5,ctls2,OpModeCooling,operation mode for cooling,,15,b524,020000007c00,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode for cooling of all/configured zone(s)
+w,ctls2,OpModeCooling,operation mode for cooling,,15,b524,020100007c00,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode for cooling of all/configured zone(s)
+r5,ctls2,OpModeEffect,op mode effect,,15,b524,020000006900,,s,IGN:4,,,,zonesel,s,UIN,0=alle;1=1;2=2;3=3;4=4;5=5;6=6,,selection which heating circuit is affected by changing parameters in the basic display
+w,ctls2,OpModeEffect,op mode effect,,15,b524,020100006900,zonesel,m,UIN,0=alle;1=1;2=2;3=3;4=4;5=5;6=6,,selection which heating circuit is affected by changing parameters in the basic display
+r5,ctls2,OpModeVentilation,operation mode for ventilation,,15,b524,020000001600,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode for ventilation of all/configured zone(s)
+w,ctls2,OpModeVentilation,operation mode for ventilation,,15,b524,020100001600,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode for ventilation of all/configured zone(s)
+r5,ctls2,OutsideTempAvg,average outside temperature,,15,b524,020000009500,,s,IGN:4,,,,tempv,s,EXP,,°C,gerundete mittlere Außentemperatur (alle 3h aktualisiert)
+r5,ctls2,PhoneNumber1,phone number 1,,15,b524,020000006f00,,s,IGN:4,,,,shortphone,s,STR:6,,,installer's telephone number
+w,ctls2,PhoneNumber1,phone number 1,,15,b524,020100006f00,shortphone,m,STR:6,,,installer's telephone number
+r5,ctls2,PhoneNumber2,phone number 2,,15,b524,020000007000,,s,IGN:4,,,,shortphone,s,STR:6,,,installer's telephone number
+w,ctls2,PhoneNumber2,phone number 2,,15,b524,020100007000,shortphone,m,STR:6,,,installer's telephone number
+r5,ctls2,PrEnergySum,total energy consumption,,15,b524,020000005c00,,s,IGN:4,,,,energy4,s,ULG,,kWh,Dieses Jahr Stromverbrauch gesamt
+w,ctls2,PrEnergySum,total energy consumption,,15,b524,020100005c00,energy4,m,ULG,,kWh,Dieses Jahr Stromverbrauch gesamt
+r5,ctls2,PrEnergySumHc,total energy consumption heating,,15,b524,020000005700,,s,IGN:4,,,,energy4,s,ULG,,kWh,Stromverbrauch Heizung gesamt
+w,ctls2,PrEnergySumHc,total energy consumption heating,,15,b524,020100005700,energy4,m,ULG,,kWh,Stromverbrauch Heizung gesamt
+r5,ctls2,PrEnergySumHcLastMonth,last months energy consumption heating,,15,b524,020000005300,,s,IGN:4,,,,energy4,s,ULG,,kWh,Letzter Monat Stromverbrauch Heizung
+w,ctls2,PrEnergySumHcLastMonth,last months energy consumption heating,,15,b524,020100005300,energy4,m,ULG,,kWh,Letzter Monat Stromverbrauch Heizung
+r5,ctls2,PrEnergySumHcThisMonth,this months energy consumption heating,,15,b524,020000004f00,,s,IGN:4,,,,energy4,s,ULG,,kWh,Aktueller Monat Stromverbrauch Heizung
+w,ctls2,PrEnergySumHcThisMonth,this months energy consumption heating,,15,b524,020100004f00,energy4,m,ULG,,kWh,Aktueller Monat Stromverbrauch Heizung
+r5,ctls2,PrEnergySumHwc,total energy consumption hot water,,15,b524,020000005800,,s,IGN:4,,,,energy4,s,ULG,,kWh,Stromverbrauch hot water gesamt
+w,ctls2,PrEnergySumHwc,total energy consumption hot water,,15,b524,020100005800,energy4,m,ULG,,kWh,Stromverbrauch hot water gesamt
+r5,ctls2,PrEnergySumHwcLastMonth,last months energy consumption hot water,,15,b524,020000005400,,s,IGN:4,,,,energy4,s,ULG,,kWh,Letzter Monat Stromverbrauch hot water
+w,ctls2,PrEnergySumHwcLastMonth,last months energy consumption hot water,,15,b524,020100005400,energy4,m,ULG,,kWh,Letzter Monat Stromverbrauch hot water
+r5,ctls2,PrEnergySumHwcThisMonth,this months energy consumption hot water,,15,b524,020000005000,,s,IGN:4,,,,energy4,s,ULG,,kWh,Aktueller Monat Stromverbrauch hot water
+w,ctls2,PrEnergySumHwcThisMonth,this months energy consumption hot water,,15,b524,020100005000,energy4,m,ULG,,kWh,Aktueller Monat Stromverbrauch hot water
+r5,ctls2,PrFuelSum,total fuel consumption,,15,b524,020000005d00,,s,IGN:4,,,,energy4,s,ULG,,kWh,Dieses Jahr Brennstoffverbrauch gesamt
+w,ctls2,PrFuelSum,total fuel consumption,,15,b524,020100005d00,energy4,m,ULG,,kWh,Dieses Jahr Brennstoffverbrauch gesamt
+r5,ctls2,PrFuelSumHc,total fuel consumption heating,,15,b524,020000005600,,s,IGN:4,,,,energy4,s,ULG,,kWh,Brennstoffverbrauch Heizung gesamt
+w,ctls2,PrFuelSumHc,total fuel consumption heating,,15,b524,020100005600,energy4,m,ULG,,kWh,Brennstoffverbrauch Heizung gesamt
+r5,ctls2,PrFuelSumHcLastMonth,last months fuel consumption heating,,15,b524,020000005200,,s,IGN:4,,,,energy4,s,ULG,,kWh,Letzter Monat Brennstoffverbrauch Heizung
+w,ctls2,PrFuelSumHcLastMonth,last months fuel consumption heating,,15,b524,020100005200,energy4,m,ULG,,kWh,Letzter Monat Brennstoffverbrauch Heizung
+r5,ctls2,PrFuelSumHcThisMonth,this months fuel consumption heating,,15,b524,020000004e00,,s,IGN:4,,,,energy4,s,ULG,,kWh,Aktueller Monat Brennstoffverbrauch Heizung
+w,ctls2,PrFuelSumHcThisMonth,this months fuel consumption heating,,15,b524,020100004e00,energy4,m,ULG,,kWh,Aktueller Monat Brennstoffverbrauch Heizung
+r5,ctls2,PrFuelSumHwc,total fuel consumption hot water,,15,b524,020000005900,,s,IGN:4,,,,energy4,s,ULG,,kWh,Brennstoffverbrauch hot water gesamt
+w,ctls2,PrFuelSumHwc,total fuel consumption hot water,,15,b524,020100005900,energy4,m,ULG,,kWh,Brennstoffverbrauch hot water gesamt
+r5,ctls2,PrFuelSumHwcLastMonth,last months fuel consumption hot water,,15,b524,020000005500,,s,IGN:4,,,,energy4,s,ULG,,kWh,Letzter Monat Brennstoffverbrauch hot water
+w,ctls2,PrFuelSumHwcLastMonth,last months fuel consumption hot water,,15,b524,020100005500,energy4,m,ULG,,kWh,Letzter Monat Brennstoffverbrauch hot water
+r5,ctls2,PrFuelSumHwcThisMonth,this months fuel consumption hot water,,15,b524,020000005100,,s,IGN:4,,,,energy4,s,ULG,,kWh,Aktueller Monat Brennstoffverbrauch hot water
+w,ctls2,PrFuelSumHwcThisMonth,this months fuel consumption hot water,,15,b524,020100005100,energy4,m,ULG,,kWh,Aktueller Monat Brennstoffverbrauch hot water
+r5,ctls2,PumpAdditionalTime,pump additional time,,15,b524,020000001b00,,s,IGN:4,,,,minutes2,s,UIN,,min,Ladepumpe Nachlaufzeit
+w,ctls2,PumpAdditionalTime,pump additional time,,15,b524,020100001b00,minutes2,m,UIN,,min,Ladepumpe Nachlaufzeit
+r5,ctls2,SFMode,SF mode,,15,b524,020000007400,,s,IGN:4,,,,sfmode,s,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+w,ctls2,SFMode,SF mode,,15,b524,020100007400,sfmode,m,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+r5,ctls2,SolarYieldTotal,total solar yield,,15,b524,020000003d00,,s,IGN:4,,,,energy4,s,ULG,,kWh,Solarertrag gesamt
+w,ctls2,SolarYieldTotal,total solar yield,,15,b524,020100003d00,energy4,m,ULG,,kWh,Solarertrag gesamt
+r5,ctls2,SystemFlowTemp,system flow temp,,15,b524,020000004b00,,s,IGN:4,,,,tempv,s,EXP,,°C,Systemvorlauf
+r5,ctls2,Time,time,,15,b524,020000003500,,s,IGN:4,,,,,s,HTI,,,Aktuelle Uhrzeit
+w,ctls2,Time,time,,15,b524,020100003500,,m,HTI,,,Aktuelle Uhrzeit
+r5,ctls2,VentilationDay,day ventilation speed,,15,b524,020000004200,,s,IGN:4,,,,,s,UIN,,,Ventilation speed during day
+w,ctls2,VentilationDay,day ventilation speed,,15,b524,020100004200,,m,UIN,,,Ventilation speed during day
+r5,ctls2,VentilationNight,night ventilation,,15,b524,020000004300,,s,IGN:4,,,,,s,UIN,,,Ventilation speed during night
+w,ctls2,VentilationNight,night ventilation,,15,b524,020100004300,,m,UIN,,,Ventilation speed during night
+r5,ctls2,WaterPressure,water pressure,,15,b524,020000003900,,s,IGN:4,,,,pressv,s,EXP,,bar,Wasserdruck
+r5,ctls2,YieldTotal,total environmental yield,,15,b524,020000003e00,,s,IGN:4,,,,energy4,s,ULG,,kWh,Umweltertrag gesamt
+w,ctls2,YieldTotal,total environmental yield,,15,b524,020100003e00,energy4,m,ULG,,kWh,Umweltertrag gesamt
+r5,ctls2,z1ActualRoomTempDesired,room temperature desired zone 1,,15,b524,020003001400,,s,IGN:4,,,,tempv,s,EXP,,°C,current room setpoint considering all basic conditions passed to the control algorithms
+r5,ctls2,z1BankHolidayEndPeriod,bank holiday end zone 1,,15,b524,020003000d00,,s,IGN:4,,,,hto,s,HDA:3,,,end date of bank holidays for zone 1
+w,ctls2,z1BankHolidayEndPeriod,bank holiday end zone 1,,15,b524,020103000d00,hto,m,HDA:3,,,end date of bank holidays for zone 1
+r5,ctls2,z1BankHolidayStartPeriod,bank holiday start zone 1,,15,b524,020003000c00,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of bank holidays for zone 1
+w,ctls2,z1BankHolidayStartPeriod,bank holiday start zone 1,,15,b524,020103000c00,hfrom,m,HDA:3,,,start date of bank holidays for zone 1
+r5,ctls2,z1CoolingTemp,cooling setpoint zone 1,,15,b524,020003000200,,s,IGN:4,,,,tempv,s,EXP,,°C,desired cooling setpoint for zone 1
+w,ctls2,z1CoolingTemp,cooling setpoint zone 1,,15,b524,020103000200,tempv,m,EXP,,°C,desired cooling setpoint for zone 1
+r5,ctls2,z1DayTemp,desired temperature zone 1,,15,b524,020003000700,,s,IGN:4,,,,tempv,s,EXP,,°C,day setpoint for zone 1
+w,ctls2,z1DayTemp,desired temperature zone 1,,15,b524,020103000700,tempv,m,EXP,,°C,day setpoint for zone 1
+r5,ctls2,z1HolidayEndPeriod,holiday period end zone 1,,15,b524,020003000400,,s,IGN:4,,,,hto,s,HDA:3,,,end date of holidays for zone 1
+w,ctls2,z1HolidayEndPeriod,holiday period end zone 1,,15,b524,020103000400,hto,m,HDA:3,,,end date of holidays for zone 1
+r5,ctls2,z1HolidayStartPeriod,holiday period start zone 1,,15,b524,020003000300,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of holidays for zone 1
+w,ctls2,z1HolidayStartPeriod,holiday period start zone 1,,15,b524,020103000300,hfrom,m,HDA:3,,,start date of holidays for zone 1
+r5,ctls2,z1HolidayTemp,room setpoint holiday period zone 1,,15,b524,020003000500,,s,IGN:4,,,,tempv,s,EXP,,°C,holiday setpoint for zone 1
+w,ctls2,z1HolidayTemp,room setpoint holiday period zone 1,,15,b524,020103000500,tempv,m,EXP,,°C,holiday setpoint for zone 1
+r5,ctls2,z1ManualTemp,desired temperature zone 1,,15,b524,020003002200,,s,IGN:4,,,,tempv,s,EXP,,°C,day setpoint for zone 1
+w,ctls2,z1ManualTemp,desired temperature zone 1,,15,b524,020103002200,tempv,m,EXP,,°C,day setpoint for zone 1
+r5,ctls2,z1Name1,zone 1 label (first part),,15,b524,020003001700,,s,IGN:4,,,,zname,s,STR:5,,,name of zone 1
+w,ctls2,z1Name1,zone 1 label (first part),,15,b524,020103001700,zname,m,STR:5,,,name of zone 1
+r5,ctls2,z1Name2,zone 1 label (second part),,15,b524,020003001800,,s,IGN:4,,,,zname,s,STR:5,,,name of zone 1
+w,ctls2,z1Name2,zone 1 label (second part),,15,b524,020103001800,zname,m,STR:5,,,name of zone 1
+r5,ctls2,z1NightTemp,night temperature zone 1,,15,b524,020003000900,,s,IGN:4,,,,tempv,s,EXP,,°C,night setpoint for zone 1
+w,ctls2,z1NightTemp,night temperature zone 1,,15,b524,020103000900,tempv,m,EXP,,°C,night setpoint for zone 1
+r5,ctls2,z1OpMode,operation mode zone 1,,15,b524,020003000600,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode of zone 1
+w,ctls2,z1OpMode,operation mode zone 1,,15,b524,020103000600,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode of zone 1
+r5,ctls2,z1OpModeCooling,cooling operation mode zone 1,,15,b524,020003000100,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode for cooling of zone 1
+w,ctls2,z1OpModeCooling,cooling operation mode zone 1,,15,b524,020103000100,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode for cooling of zone 1
+r5,ctls2,z1QuickVetoTemp,quick veto temperature zone 1,,15,b524,020003000800,,s,IGN:4,,,,tempv,s,EXP,,°C,manual override setpoint for zone 1
+w,ctls2,z1QuickVetoTemp,quick veto temperature zone 1,,15,b524,020103000800,tempv,m,EXP,,°C,manual override setpoint for zone 1
+r5,ctls2,z1RoomTemp,room temperature zone 1,,15,b524,020003000f00,,s,IGN:4,,,,tempv,s,EXP,,°C,current room temperature in zone 1
+r5,ctls2,z1RoomZoneMapping,room zone mapping zone 1,,15,b524,020003001300,,s,IGN:4,,,,zmapping,s,UIN,0=none;1=VRC700;2=VR91.1;3=VR91.2;4=VR91.3,,configures which room temperature is assigned to zone 1
+w,ctls2,z1RoomZoneMapping,room zone mapping zone 1,,15,b524,020103001300,zmapping,m,UIN,0=none;1=VRC700;2=VR91.1;3=VR91.2;4=VR91.3,,configures which room temperature is assigned to zone 1
+r5,ctls2,z1SFMode,SF mode zone 1,,15,b524,020003000e00,,s,IGN:4,,,,sfmode,s,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+w,ctls2,z1SFMode,SF mode zone 1,,15,b524,020103000e00,sfmode,m,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+r5,ctls2,z1Shortname,Kurzbezeichnung zone 1,,15,b524,020003001600,,s,IGN:4,,,,shortname,s,STR:6,,,short name of zone 1
+w,ctls2,z1Shortname,Kurzbezeichnung zone 1,,15,b524,020103001600,shortname,m,STR:6,,,short name of zone 1
+r5,ctls2,z1ValveStatus,valve status zone 1,,15,b524,020003001200,,s,IGN:4,,,,,s,UCH,0=close;1=open,,valve status of zone 1
+w,ctls2,z1ValveStatus,valve status zone 1,,15,b524,020103001200,,m,UCH,0=close;1=open,,valve status of zone 1
+r5,ctls2,z2ActualRoomTempDesired,room temperature desired zone 2,,15,b524,020003011400,,s,IGN:4,,,,tempv,s,EXP,,°C,current room setpoint considering all basic conditions passed to the control algorithms
+r5,ctls2,z2BankHolidayEndPeriod,bank holiday end zone 2,,15,b524,020003010d00,,s,IGN:4,,,,hto,s,HDA:3,,,end date of bank holidays for zone 2
+w,ctls2,z2BankHolidayEndPeriod,bank holiday end zone 2,,15,b524,020103010d00,hto,m,HDA:3,,,end date of bank holidays for zone 2
+r5,ctls2,z2BankHolidayStartPeriod,bank holiday start zone 2,,15,b524,020003010c00,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of bank holidays for zone 2
+w,ctls2,z2BankHolidayStartPeriod,bank holiday start zone 2,,15,b524,020103010c00,hfrom,m,HDA:3,,,start date of bank holidays for zone 2
+r5,ctls2,z2CoolingTemp,cooling setpoint zone 2,,15,b524,020003010200,,s,IGN:4,,,,tempv,s,EXP,,°C,desired cooling setpoint for zone 2
+w,ctls2,z2CoolingTemp,cooling setpoint zone 2,,15,b524,020103010200,tempv,m,EXP,,°C,desired cooling setpoint for zone 2
+r5,ctls2,z2DayTemp,desired temperature zone 2,,15,b524,020003010700,,s,IGN:4,,,,tempv,s,EXP,,°C,day setpoint for zone 2
+w,ctls2,z2DayTemp,desired temperature zone 2,,15,b524,020103010700,tempv,m,EXP,,°C,day setpoint for zone 2
+r5,ctls2,z2HolidayEndPeriod,holiday period end zone 2,,15,b524,020003010400,,s,IGN:4,,,,hto,s,HDA:3,,,end date of holidays for zone 2
+w,ctls2,z2HolidayEndPeriod,holiday period end zone 2,,15,b524,020103010400,hto,m,HDA:3,,,end date of holidays for zone 2
+r5,ctls2,z2HolidayStartPeriod,holiday period start zone 2,,15,b524,020003010300,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of holidays for zone 2
+w,ctls2,z2HolidayStartPeriod,holiday period start zone 2,,15,b524,020103010300,hfrom,m,HDA:3,,,start date of holidays for zone 2
+r5,ctls2,z2HolidayTemp,room setpoint holiday period zone 2,,15,b524,020003010500,,s,IGN:4,,,,tempv,s,EXP,,°C,holiday setpoint for zone 2
+w,ctls2,z2HolidayTemp,room setpoint holiday period zone 2,,15,b524,020103010500,tempv,m,EXP,,°C,holiday setpoint for zone 2
+r5,ctls2,z2ManualTemp,desired temperature zone 1,,15,b524,020003012200,,s,IGN:4,,,,tempv,s,EXP,,°C,day setpoint for zone 1
+w,ctls2,z2ManualTemp,desired temperature zone 1,,15,b524,020103012200,tempv,m,EXP,,°C,day setpoint for zone 1
+r5,ctls2,z2Name1,zone 2 label (first part),,15,b524,020003011700,,s,IGN:4,,,,zname,s,STR:5,,,name of zone 2
+w,ctls2,z2Name1,zone 2 label (first part),,15,b524,020103011700,zname,m,STR:5,,,name of zone 2
+r5,ctls2,z2Name2,zone 2 label (second part),,15,b524,020003011800,,s,IGN:4,,,,zname,s,STR:5,,,name of zone 2
+w,ctls2,z2Name2,zone 2 label (second part),,15,b524,020103011800,zname,m,STR:5,,,name of zone 2
+r5,ctls2,z2NightTemp,night temperature zone 2,,15,b524,020003010900,,s,IGN:4,,,,tempv,s,EXP,,°C,night setpoint for zone 2
+w,ctls2,z2NightTemp,night temperature zone 2,,15,b524,020103010900,tempv,m,EXP,,°C,night setpoint for zone 2
+r5,ctls2,z2OpMode,operation mode zone 2,,15,b524,020003010600,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode of zone 2
+w,ctls2,z2OpMode,operation mode zone 2,,15,b524,020103010600,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode of zone 2
+r5,ctls2,z2OpModeCooling,cooling operation mode zone 2,,15,b524,020003010100,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode for cooling of zone 2
+w,ctls2,z2OpModeCooling,cooling operation mode zone 2,,15,b524,020103010100,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode for cooling of zone 2
+r5,ctls2,z2QuickVetoTemp,quick veto temperature zone 2,,15,b524,020003010800,,s,IGN:4,,,,tempv,s,EXP,,°C,manual override setpoint for zone 2
+w,ctls2,z2QuickVetoTemp,quick veto temperature zone 2,,15,b524,020103010800,tempv,m,EXP,,°C,manual override setpoint for zone 2
+r5,ctls2,z2RoomTemp,room temperature zone 2,,15,b524,020003010f00,,s,IGN:4,,,,tempv,s,EXP,,°C,current room temperature in zone 2
+r5,ctls2,z2RoomZoneMapping,room zone mapping zone 2,,15,b524,020003011300,,s,IGN:4,,,,zmapping,s,UIN,0=none;1=VRC700;2=VR91.1;3=VR91.2;4=VR91.3,,configures which room temperature is assigned to zone 2
+w,ctls2,z2RoomZoneMapping,room zone mapping zone 2,,15,b524,020103011300,zmapping,m,UIN,0=none;1=VRC700;2=VR91.1;3=VR91.2;4=VR91.3,,configures which room temperature is assigned to zone 2
+r5,ctls2,z2SFMode,SF mode zone 2,,15,b524,020003010e00,,s,IGN:4,,,,sfmode,s,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+w,ctls2,z2SFMode,SF mode zone 2,,15,b524,020103010e00,sfmode,m,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+r5,ctls2,z2Shortname,Kurzbezeichnung zone 2,,15,b524,020003011600,,s,IGN:4,,,,shortname,s,STR:6,,,short name of zone 2
+w,ctls2,z2Shortname,Kurzbezeichnung zone 2,,15,b524,020103011600,shortname,m,STR:6,,,short name of zone 2
+r5,ctls2,z2ValveStatus,valve status zone 2,,15,b524,020003011200,,s,IGN:4,,,,,s,UCH,0=close;1=open,,valve status of zone 2
+w,ctls2,z2ValveStatus,valve status zone 2,,15,b524,020103011200,,m,UCH,0=close;1=open,,valve status of zone 2
+r5,ctls2,z3ActualRoomTempDesired,room temperature desired zone 3,,15,b524,020003021400,,s,IGN:4,,,,tempv,s,EXP,,°C,current room setpoint considering all basic conditions passed to the control algorithms
+r5,ctls2,z3BankHolidayEndPeriod,bank holiday end zone 3,,15,b524,020003020d00,,s,IGN:4,,,,hto,s,HDA:3,,,end date of bank holidays for zone 3
+w,ctls2,z3BankHolidayEndPeriod,bank holiday end zone 3,,15,b524,020103020d00,hto,m,HDA:3,,,end date of bank holidays for zone 3
+r5,ctls2,z3BankHolidayStartPeriod,bank holiday start zone 3,,15,b524,020003020c00,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of bank holidays for zone 3
+w,ctls2,z3BankHolidayStartPeriod,bank holiday start zone 3,,15,b524,020103020c00,hfrom,m,HDA:3,,,start date of bank holidays for zone 3
+r5,ctls2,z3CoolingTemp,cooling setpoint zone 3,,15,b524,020003020200,,s,IGN:4,,,,tempv,s,EXP,,°C,desired cooling setpoint for zone 3
+w,ctls2,z3CoolingTemp,cooling setpoint zone 3,,15,b524,020103020200,tempv,m,EXP,,°C,desired cooling setpoint for zone 3
+r5,ctls2,z3DayTemp,desired temperature zone 3,,15,b524,020003020700,,s,IGN:4,,,,tempv,s,EXP,,°C,day setpoint for zone 3
+w,ctls2,z3DayTemp,desired temperature zone 3,,15,b524,020103020700,tempv,m,EXP,,°C,day setpoint for zone 3
+r5,ctls2,z3HolidayEndPeriod,holiday period end zone 3,,15,b524,020003020400,,s,IGN:4,,,,hto,s,HDA:3,,,end date of holidays for zone 3
+w,ctls2,z3HolidayEndPeriod,holiday period end zone 3,,15,b524,020103020400,hto,m,HDA:3,,,end date of holidays for zone 3
+r5,ctls2,z3HolidayStartPeriod,holiday period start zone 3,,15,b524,020003020300,,s,IGN:4,,,,hfrom,s,HDA:3,,,start date of holidays for zone 3
+w,ctls2,z3HolidayStartPeriod,holiday period start zone 3,,15,b524,020103020300,hfrom,m,HDA:3,,,start date of holidays for zone 3
+r5,ctls2,z3HolidayTemp,room setpoint holiday period zone 3,,15,b524,020003020500,,s,IGN:4,,,,tempv,s,EXP,,°C,holiday setpoint for zone 3
+w,ctls2,z3HolidayTemp,room setpoint holiday period zone 3,,15,b524,020103020500,tempv,m,EXP,,°C,holiday setpoint for zone 3
+r5,ctls2,z3ManualTemp,desired temperature zone 1,,15,b524,020003022200,,s,IGN:4,,,,tempv,s,EXP,,°C,day setpoint for zone 1
+w,ctls2,z3ManualTemp,desired temperature zone 1,,15,b524,020103022200,tempv,m,EXP,,°C,day setpoint for zone 1
+r5,ctls2,z3Name1,label zone 3 part 1,,15,b524,020003021700,,s,IGN:4,,,,zname,s,STR:5,,,name of zone 3
+w,ctls2,z3Name1,label zone 3 part 1,,15,b524,020103021700,zname,m,STR:5,,,name of zone 3
+r5,ctls2,z3Name2,label zone 3 part 2,,15,b524,020003021800,,s,IGN:4,,,,zname,s,STR:5,,,name of zone 3
+w,ctls2,z3Name2,label zone 3 part 2,,15,b524,020103021800,zname,m,STR:5,,,name of zone 3
+r5,ctls2,z3NightTemp,night temperature zone 3,,15,b524,020003020900,,s,IGN:4,,,,tempv,s,EXP,,°C,night setpoint for zone 3
+w,ctls2,z3NightTemp,night temperature zone 3,,15,b524,020103020900,tempv,m,EXP,,°C,night setpoint for zone 3
+r5,ctls2,z3OpMode,operation mode zone 3,,15,b524,020003020600,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode of zone 3
+w,ctls2,z3OpMode,operation mode zone 3,,15,b524,020103020600,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode of zone 3
+r5,ctls2,z3OpModeCooling,cooling operation mode zone 3,,15,b524,020003020100,,s,IGN:4,,,,opmode,s,UIN,0=off;1=auto;2=day;3=night,,operation mode for cooling of zone 3
+w,ctls2,z3OpModeCooling,cooling operation mode zone 3,,15,b524,020103020100,opmode,m,UIN,0=off;1=auto;2=day;3=night,,operation mode for cooling of zone 3
+r5,ctls2,z3QuickVetoTemp,quick veto temperature zone 3,,15,b524,020003020800,,s,IGN:4,,,,tempv,s,EXP,,°C,manual override setpoint for zone 3
+w,ctls2,z3QuickVetoTemp,quick veto temperature zone 3,,15,b524,020103020800,tempv,m,EXP,,°C,manual override setpoint for zone 3
+r5,ctls2,z3RoomTemp,room temperature zone 3,,15,b524,020003020f00,,s,IGN:4,,,,tempv,s,EXP,,°C,current room temperature in zone 3
+r5,ctls2,z3RoomZoneMapping,room zone mapping zone 3,,15,b524,020003021300,,s,IGN:4,,,,zmapping,s,UIN,0=none;1=VRC700;2=VR91.1;3=VR91.2;4=VR91.3,,configures which room temperature is assigned to zone 3
+w,ctls2,z3RoomZoneMapping,room zone mapping zone 3,,15,b524,020103021300,zmapping,m,UIN,0=none;1=VRC700;2=VR91.1;3=VR91.2;4=VR91.3,,configures which room temperature is assigned to zone 3
+r5,ctls2,z3SFMode,SF mode zone 3,,15,b524,020003020e00,,s,IGN:4,,,,sfmode,s,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+w,ctls2,z3SFMode,SF mode zone 3,,15,b524,020103020e00,sfmode,m,UCH,0=auto;1=ventilation;2=party;3=veto;6=load,,
+r5,ctls2,z3Shortname,shortlabel zone 3,,15,b524,020003021600,,s,IGN:4,,,,shortname,s,STR:6,,,short name of zone 3
+w,ctls2,z3Shortname,shortlabel zone 3,,15,b524,020103021600,shortname,m,STR:6,,,short name of zone 3
+r5,ctls2,z3ValveStatus,valve status zone 3,,15,b524,020003021200,,s,IGN:4,,,,,s,UCH,0=close;1=open,,valve status of zone 3
+w,ctls2,z3ValveStatus,valve status zone 3,,15,b524,020103021200,,m,UCH,0=close;1=open,,valve status of zone 3

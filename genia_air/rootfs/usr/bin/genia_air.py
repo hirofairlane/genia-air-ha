@@ -16,7 +16,10 @@ import logging
 import os
 import queue
 import re
+import signal
 import sqlite3
+import subprocess
+import sys
 import threading
 import time
 from collections import OrderedDict
@@ -32,7 +35,7 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.1.4"
+VERSION = "0.2.0"
 
 
 def _load_options() -> dict:
@@ -96,6 +99,8 @@ _opts = _load_options()
 _mqtt = _query_supervisor_mqtt()
 
 CONF = {
+    "ebus_device":           _opts.get("ebus_device", "ens:192.168.1.171:9999"),
+    "ebusd_log_level":       str(_opts.get("ebusd_log_level", "notice")),
     "topic_prefix":          _opts.get("topic_prefix", "ebusd"),
     "zone_count":            int(_opts.get("zone_count", 1)),
     "optimize_flow_temp":    bool(_opts.get("optimize_flow_temp", True)),
@@ -281,6 +286,123 @@ def db_log_decision(kind: str, reason: str, detail: dict) -> None:
             f.write(json.dumps(record) + "\n")
     except Exception:
         pass
+
+
+# ───────────────────────────────────────────────────────────────────────────
+# ebusd subprocess — bundled daemon, supervised
+# ───────────────────────────────────────────────────────────────────────────
+
+EBUSD_BIN = "/usr/bin/ebusd"
+EBUSD_CONFIG_PATH = "/usr/share/ebusd/vaillant"
+EBUSD_PROCESS: subprocess.Popen | None = None
+EBUSD_LAST_RESTART = 0.0
+EBUSD_RESTART_COUNT = 0
+
+
+def _ebusd_argv() -> list[str]:
+    """Build the ebusd command line."""
+    return [
+        EBUSD_BIN,
+        "--foreground",
+        "--device", CONF["ebus_device"],
+        "--configpath", EBUSD_CONFIG_PATH,
+        "--scanconfig",
+        "--accesslevel", "*",
+        "--mqtthost", CONF["mqtt_host"],
+        "--mqttport", str(CONF["mqtt_port"]),
+        "--mqttuser", CONF["mqtt_user"],
+        "--mqttpass", CONF["mqtt_pass"],
+        "--mqtttopic", CONF["topic_prefix"],
+        "--mqttjson",
+        "--mqttretain",
+        "--log", f"all:{CONF['ebusd_log_level']}",
+    ]
+
+
+def _ebusd_pump_logs() -> None:
+    """Background reader: forward ebusd stdout/stderr lines into our logger."""
+    proc = EBUSD_PROCESS
+    if not proc or not proc.stdout:
+        return
+    for line in iter(proc.stdout.readline, b""):
+        try:
+            text = line.decode("utf-8", errors="replace").rstrip()
+        except Exception:
+            continue
+        if not text:
+            continue
+        # Tag every ebusd line so logs are easy to grep.
+        log.info("[ebusd] %s", text)
+
+
+def ebusd_start() -> None:
+    """Spawn ebusd as a child process. Idempotent."""
+    global EBUSD_PROCESS
+    if EBUSD_PROCESS and EBUSD_PROCESS.poll() is None:
+        return
+    argv = _ebusd_argv()
+    # Don't leak password into the log line, but keep enough to debug.
+    safe = [a if "pass" not in argv[i - 1].lower() else "***" for i, a in enumerate(argv)]
+    log.info("Spawning ebusd: %s", " ".join(safe))
+    try:
+        EBUSD_PROCESS = subprocess.Popen(
+            argv,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            bufsize=1,
+            close_fds=True,
+        )
+    except FileNotFoundError:
+        log.error("ebusd binary not found at %s — bad image build", EBUSD_BIN)
+        return
+    except Exception as exc:
+        log.error("ebusd failed to spawn: %s", exc)
+        return
+    threading.Thread(target=_ebusd_pump_logs, name="ebusd-logs", daemon=True).start()
+
+
+def ebusd_watchdog() -> None:
+    """Re-spawn ebusd if it dies. Capped restart rate (max 1 every 5 s)."""
+    global EBUSD_PROCESS, EBUSD_LAST_RESTART, EBUSD_RESTART_COUNT
+    proc = EBUSD_PROCESS
+    if proc is None:
+        ebusd_start()
+        return
+    rc = proc.poll()
+    if rc is None:
+        return  # still running
+    now = time.time()
+    if now - EBUSD_LAST_RESTART < 5:
+        return
+    EBUSD_LAST_RESTART = now
+    EBUSD_RESTART_COUNT += 1
+    log.warning("ebusd exited with rc=%s — restart #%d", rc, EBUSD_RESTART_COUNT)
+    EBUSD_PROCESS = None
+    ebusd_start()
+
+
+def ebusd_stop() -> None:
+    global EBUSD_PROCESS
+    if EBUSD_PROCESS and EBUSD_PROCESS.poll() is None:
+        log.info("Stopping ebusd (SIGTERM)")
+        try:
+            EBUSD_PROCESS.terminate()
+            EBUSD_PROCESS.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            log.warning("ebusd did not exit on SIGTERM, sending SIGKILL")
+            EBUSD_PROCESS.kill()
+        EBUSD_PROCESS = None
+
+
+def _install_signal_handlers() -> None:
+    """Cleanly tear down ebusd when the container is stopped."""
+    def _shutdown(signum, _frame):
+        log.info("Received signal %s — shutting down", signum)
+        ebusd_stop()
+        SCHEDULER.shutdown(wait=False)
+        sys.exit(0)
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        signal.signal(sig, _shutdown)
 
 
 # ───────────────────────────────────────────────────────────────────────────
@@ -602,6 +724,9 @@ def task_health_check() -> None:
     snap = collect_snapshot()
     ok = True
     reasons: list[str] = []
+    if EBUSD_PROCESS is None or EBUSD_PROCESS.poll() is not None:
+        ok = False
+        reasons.append("ebusd not running")
     if not snap["mqtt_connected"]:
         ok = False
         reasons.append("MQTT disconnected")
@@ -784,15 +909,38 @@ def api_decisions():
 
 @app.route("/api/health")
 def api_health():
+    ebusd_alive = EBUSD_PROCESS is not None and EBUSD_PROCESS.poll() is None
     return jsonify({
         "ok": HEALTH["ok"],
         "reasons": HEALTH["reasons"],
         "since": HEALTH["since"],
         "mqtt_connected": MQTT_CONNECTED.is_set(),
+        "ebusd_running": ebusd_alive,
+        "ebusd_pid": EBUSD_PROCESS.pid if ebusd_alive else None,
+        "ebusd_restarts": EBUSD_RESTART_COUNT,
         "state_size": len(STATE),
         "version": VERSION,
         "uptime_seconds": int(time.time() - HEALTH["since"]),
     })
+
+
+@app.route("/api/ebusd", methods=["POST"])
+def api_ebusd_action():
+    """Manual control: {action: 'restart'|'stop'|'start'}."""
+    action = (request.get_json(force=True, silent=True) or {}).get("action", "")
+    if action == "restart":
+        ebusd_stop()
+        time.sleep(1)
+        ebusd_start()
+    elif action == "stop":
+        ebusd_stop()
+    elif action == "start":
+        ebusd_start()
+    else:
+        abort(400)
+    db_log_decision("user_ebusd", f"ebusd {action}", {"action": action})
+    return jsonify({"ok": True, "action": action,
+                    "running": EBUSD_PROCESS is not None and EBUSD_PROCESS.poll() is None})
 
 
 @app.route("/api/write", methods=["POST"])
@@ -1051,8 +1199,10 @@ input:checked+.tslide:before{transform:translateX(20px);background:#0f172a}
 
 <!-- Diagnostics -->
 <div id="t-diag" class="tab-content">
+  <div id="ebusd-card" class="card" style="margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap"></div>
   <div class="actions">
     <button class="btn btn-sm" onclick="forceRead()">📡 Force-read all</button>
+    <button class="btn btn-sm btn-y" onclick="ebusdAction('restart')">🔁 Restart ebusd</button>
     <button class="btn btn-sm" onclick="loadDiag()">🔄 Refresh</button>
   </div>
   <div class="card" style="overflow-x:auto">
@@ -1290,7 +1440,17 @@ async function loadCharts(){
 // Diagnostics
 async function loadDiag(){
   try{
-    const msgs = await api("/api/messages");
+    const [msgs, h] = await Promise.all([api("/api/messages"), api("/api/health")]);
+    // ebusd status card
+    const ec = $("ebusd-card");
+    const running = h.ebusd_running;
+    ec.innerHTML =
+      `<div style="font-size:2rem">${running?"🟢":"🔴"}</div>`+
+      `<div style="flex:1;min-width:200px">`+
+        `<div style="font-weight:600">ebusd ${running?"running":"stopped"}</div>`+
+        `<div class="sub">PID ${h.ebusd_pid ?? "—"} · restarts: ${h.ebusd_restarts} · MQTT ${h.mqtt_connected?"✓":"✗"} · messages: ${h.state_size} · uptime ${fmtAge(h.uptime_seconds)}</div>`+
+      `</div>`;
+    // messages table
     const tb = $("diag-tbody"); tb.innerHTML="";
     if(!msgs.length){ tb.innerHTML='<tr><td colspan="4" class="empty">No ebusd messages yet.</td></tr>'; return; }
     msgs.forEach(m=>{
@@ -1305,6 +1465,12 @@ async function loadDiag(){
 async function forceRead(){
   try{ await api("/api/force_read", {method:"POST"}); toast("Force-read dispatched","info");
        setTimeout(loadDiag, 6000);
+  } catch(e){ toast("Error: "+e.message,"err"); }
+}
+async function ebusdAction(action){
+  try{ const r = await api("/api/ebusd", {method:"POST", body:JSON.stringify({action})});
+       toast("ebusd "+action+(r.running?" → running":" → stopped"),"ok");
+       setTimeout(loadDiag, 4000);
   } catch(e){ toast("Error: "+e.message,"err"); }
 }
 
@@ -1324,12 +1490,16 @@ setInterval(()=>{ if(document.querySelector(".tab.active").dataset.tab==="optimi
 
 def boot() -> None:
     db_init_safe()
+    _install_signal_handlers()
+    ebusd_start()
     mqtt_start()
 
+    # Initial sync runs later than before — give ebusd a few seconds to
+    # finish its bus scan and seed the MQTT discovery before we ask for reads.
     SCHEDULER.add_job(task_initial_sync, "date",
-                      run_date=datetime.utcnow() + timedelta(seconds=5))
+                      run_date=datetime.utcnow() + timedelta(seconds=20))
     SCHEDULER.add_job(mqtt_post_connect_subs, "date",
-                      run_date=datetime.utcnow() + timedelta(seconds=6))
+                      run_date=datetime.utcnow() + timedelta(seconds=8))
     SCHEDULER.add_job(task_initial_sync, "interval", minutes=20,
                       id="initial_sync_periodic")
     SCHEDULER.add_job(task_snapshot_history, "interval", minutes=1,
@@ -1340,8 +1510,11 @@ def boot() -> None:
                       id="health_check")
     SCHEDULER.add_job(task_publish_states, "interval", seconds=20,
                       id="publish_states")
+    SCHEDULER.add_job(ebusd_watchdog, "interval", seconds=15,
+                      id="ebusd_watchdog")
     SCHEDULER.start()
-    log.info("Scheduler started — initial sync in 5s")
+    log.info("Scheduler started — ebusd PID=%s, initial sync in 20s",
+             EBUSD_PROCESS.pid if EBUSD_PROCESS else "?")
 
 
 boot()

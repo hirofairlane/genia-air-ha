@@ -1,0 +1,15 @@
+# ebusd broadcast messages for Vaillant
+# Backup date: 2026-05-03
+u,broadcast,datetime,date/time,,fe,0700,,outsidetemp,m,D2B,,°C,temperature,time,m,BTI,,,time,date,m,BDA,,,date
+u,broadcast,error,error message,,fe,fe01,,error,m,STR:10,,,
+u,broadcast,hwcStatus,state hot water,,fe,b505,27,onoff,m,UCH,0=off;1=on,,,VF1,m,UCH,,°C,temperature,onoff,m,UCH,0=off;1=on,,
+u,broadcast,id,identification,,fe,0704,,manufacturer,m,UCH,6=Dungs;15=FH Ostfalia;16=TEM;17=Lamberti;20=CEB;21=Landis-Staefa;22=FERRO;23=MONDIAL;24=Wikon;25=Wolf;32=RAWE;48=Satronic;64=ENCON;80=Kromschröder;96=Eberle;101=EBV;117=Grässlin;133=ebm-papst;149=SIG;165=Theben;167=Thermowatt;181=Vaillant;192=Toby;197=Weishaupt;253=ebusd.eu,,device manufacturer,id,m,STR:5,,,device id,software,m,PIN,,,software version,hardware,m,PIN,,,hardware version
+r,broadcast,id,identification,,,0704,,manufacturer,s,UCH,6=Dungs;15=FH Ostfalia;16=TEM;17=Lamberti;20=CEB;21=Landis-Staefa;22=FERRO;23=MONDIAL;24=Wikon;25=Wolf;32=RAWE;48=Satronic;64=ENCON;80=Kromschröder;96=Eberle;101=EBV;117=Grässlin;133=ebm-papst;149=SIG;165=Theben;167=Thermowatt;181=Vaillant;192=Toby;197=Weishaupt;253=ebusd.eu,,device manufacturer,id,s,STR:5,,,device id,software,s,PIN,,,software version,hardware,s,PIN,,,hardware version
+w,broadcast,id,identification,,fe,0704,,
+u,broadcast,load,quick - hot water tank filling,,fe,b505,06,onoff,m,UCH,0=off;1=on,,
+u,broadcast,NoiseReduction,noise reduction state,,fe,b508,,,m,IGN:1,,,,onoff,m,UCH,0=off;1=on,,
+u,broadcast,outsidetemp,outside temperature,,fe,b516,01,temp2,m,D2B,,°C,temperature
+w,broadcast,queryexistence,Inquiry of existence,,fe,07fe,,
+u,broadcast,signoflife,sign of life,,fe,07ff,,
+u,broadcast,vdatetime,date/time,,fe,b516,00,time,m,BTI,,,,date,m,BDA,,,
+w,broadcast,vdatetime,date/time,,fe,b516,00,time,m,BTI,,,,date,m,BDA,,,

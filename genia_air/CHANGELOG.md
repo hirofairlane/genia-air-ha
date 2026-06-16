@@ -1,5 +1,35 @@
 # Changelog
 
+## 0.2.0 — 2026-06-16
+
+**Self-contained**: the add-on now bundles `ebusd` and no longer needs
+the external `LukasGrebe/ebusd` add-on. Plug the network adapter URL in
+the configuration and you are done.
+
+- Switched base image from Alpine to Debian bookworm (Alpine has no
+  ebusd package; john30 publishes Debian `.deb` releases).
+- `ebusd v25.1` installed from the upstream release `.deb` matching
+  the build architecture.
+- Vaillant CSV definitions bundled at `/usr/share/ebusd/vaillant/`
+  (HMU + CTLS2 + broadcast + VWZ).
+- Python now supervises ebusd as a child process: spawn, log forwarding,
+  watchdog every 15 s, clean SIGTERM/SIGINT teardown.
+- New config options: `ebus_device` (default `ens:192.168.1.171:9999`)
+  and `ebusd_log_level`.
+- `/api/health` exposes `ebusd_running`, `ebusd_pid`, `ebusd_restarts`.
+- New `/api/ebusd` endpoint: `{action: "start"|"stop"|"restart"}`.
+- Diagnostics tab shows an ebusd status card and a Restart ebusd button.
+- `tini` as PID 1 for proper signal propagation to the multi-process
+  container.
+
+Breaking changes: uninstall the LukasGrebe ebusd add-on before
+installing this one (or change its MQTT topic prefix) so both daemons
+don't publish to the same topics.
+
+Historical-data migration from the old `sensor.ebusd_*` and
+`sensor.aerotermia_*` entities is **NOT** part of 0.2.0 — it is
+tracked in `LOOP-NOTES.md` for the next session.
+
 ## 0.1.4 — 2026-06-13
 
 - UI fully translated to English (the source-of-truth language for the
