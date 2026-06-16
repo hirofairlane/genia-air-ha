@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-06-16
+
+- Fix ebusd `.deb` URL: upstream uses `ebusd-26.1_<arch>-bookworm_mqtt1.deb`
+  (not `..._debian12_...`), and the current release is 26.1, not 25.1.
+  Build was failing with wget exit 8.
+
 ## 0.2.0 — 2026-06-16
 
 **Self-contained**: the add-on now bundles `ebusd` and no longer needs

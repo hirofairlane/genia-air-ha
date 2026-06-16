@@ -35,7 +35,7 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 
 def _load_options() -> dict:
