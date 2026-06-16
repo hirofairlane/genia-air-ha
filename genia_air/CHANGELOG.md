@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.5 — 2026-06-16
+
+- Fix **Total hours / Heating hours / Cooling hours** stuck at "—". The
+  bundled ebusd v26 CSV publishes these as `{"energy": <N>}`; the
+  legacy LukasGrebe CSV used positional `"0"`. Try the named field
+  first and fall back to `"0"` so both work.
+- Better COP UX: when the compressor is idle (instantaneous COP would
+  be null because electric power ≈ 0), fall back to a **30-minute
+  rolling COP** computed from the SQLite history. If that's also
+  empty, show `"idle"` instead of `—`.
+
 ## 0.2.4 — 2026-06-16
 
 - Auto-fallback when the configured `ebus_device` TCP endpoint is

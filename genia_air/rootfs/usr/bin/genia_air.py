@@ -35,7 +35,7 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 
 
 def _load_options() -> dict:
@@ -559,11 +559,38 @@ def compute_delta_t() -> float | None:
 
 
 def compute_cop() -> float | None:
+    """Instantaneous COP — None when the compressor is idle (p_in ≈ 0)."""
     p_in  = _field("hmu", "CurrentConsumedPower", "0")
     p_out = _field("hmu", "CurrentYieldPower", "0")
     if p_in is None or p_out is None or p_in <= 0.05:
         return None
     return round(p_out / p_in, 2)
+
+
+def compute_cop_rolling(window_min: int = 30) -> float | None:
+    """Rolling COP from the last `window_min` minutes of snapshots.
+
+    Sum of thermal power / sum of electric power. Useful when the
+    compressor is currently idle but ran recently. Returns None if there
+    isn't enough data or no consumption was logged in the window.
+    """
+    in_rows  = db_query_series("power_in",  hours=max(1, (window_min + 59) // 60))
+    out_rows = db_query_series("power_out", hours=max(1, (window_min + 59) // 60))
+    since = int(time.time()) - window_min * 60
+    in_sum  = sum(v for ts, v in in_rows  if ts >= since)
+    out_sum = sum(v for ts, v in out_rows if ts >= since)
+    if in_sum <= 0.05:
+        return None
+    return round(out_sum / in_sum, 2)
+
+
+def _hours_field(circuit: str, msg: str) -> float | None:
+    """ebusd v26 publishes Hours/HoursHc/HoursCool as {"energy": <N>} —
+    older configs used positional "0". Try both."""
+    v = _field(circuit, msg, "energy")
+    if v is not None:
+        return v
+    return _field(circuit, msg, "0")
 
 
 _STATE_TO_HVAC = {
@@ -618,15 +645,16 @@ def collect_snapshot() -> dict:
         "outside_temp": _field("ctls2", "OutsideTempAvg", "tempv"),
         "delta_t": compute_delta_t(),
         "cop": compute_cop(),
+        "cop_rolling_30m": compute_cop_rolling(30),
         "supply_temp": _field("hmu", "Status01", "0"),
         "return_temp": _field("hmu", "Status01", "1"),
         "power_in": _field("hmu", "CurrentConsumedPower", "0"),
         "power_out": _field("hmu", "CurrentYieldPower", "0"),
         "compressor_modulation": _field("hmu", "CurrentCompressorUtil", "0"),
         "water_throughput": _field("hmu", "WaterThroughput", "0"),
-        "hours_total": _field("hmu", "Hours", "0"),
-        "hours_heating": _field("hmu", "HoursHc", "0"),
-        "hours_cooling": _field("hmu", "HoursCool", "0"),
+        "hours_total": _hours_field("hmu", "Hours"),
+        "hours_heating": _hours_field("hmu", "HoursHc"),
+        "hours_cooling": _hours_field("hmu", "HoursCool"),
         "yield_total": _field("ctls2", "YieldTotal", "energy4"),
         "max_flow_temp": _field("ctls2", "Hc1MaxFlowTempDesired", "tempv"),
         "min_flow_temp": _field("ctls2", "Hc1MinFlowTempDesired", "tempv"),
@@ -1304,7 +1332,14 @@ async function loadState(){
     const k = $("kpis"); k.innerHTML="";
     [
       ["ΔT", fmt(s.delta_t, " K"), s.delta_t==null?"":"y"],
-      ["COP", fmt(s.cop, "", 2), s.cop>3?"g":s.cop>2?"y":"r"],
+      // Instantaneous COP when running; otherwise the 30-min rolling avg with
+      // a small badge so the user knows it's not live.
+      s.cop != null
+        ? ["COP", fmt(s.cop, "", 2), s.cop>3?"g":s.cop>2?"y":"r"]
+        : (s.cop_rolling_30m != null
+            ? ["COP (30 min)", fmt(s.cop_rolling_30m, "", 2),
+               s.cop_rolling_30m>3?"g":s.cop_rolling_30m>2?"y":"r"]
+            : ["COP", "idle", "m"]),
       ["Modulation", fmt(s.compressor_modulation, " %", 0), "p"],
       ["Electric power", fmt(s.power_in, " kW", 2), "y"],
       ["Thermal power", fmt(s.power_out, " kW", 2), "g"],
