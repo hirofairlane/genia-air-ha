@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.2.4 — 2026-06-16
+
+- Auto-fallback when the configured `ebus_device` TCP endpoint is
+  unreachable: probe the host once at boot, and if it fails, scan the
+  same `/24` for a host accepting connections on the same port. Helps
+  when the persisted option points to an adapter that has moved or
+  changed IP (in Sergio's case, .171 → .61). Concurrent probes via a
+  32-worker thread pool, ~5 s scan time per /24.
+
+## 0.2.3 — 2026-06-16
+
+- Stop overriding the HA base image's s6-overlay init (drop the tini
+  ENTRYPOINT). The Debian base ships with `/init` from s6-overlay which
+  populates `/run/s6/container_environment/`; with-contenv reads from
+  there. Removing s6 broke the env-vars path Python relied on.
+- Bring back `#!/usr/bin/with-contenv sh` in `run.sh`.
+- Drop `tini` from apt deps — not needed once s6 is in charge again.
+- Python's existing SIGTERM handler still cleans up the ebusd subprocess.
+
+## 0.2.2 — 2026-06-16
+
+- Drop `#!/usr/bin/with-contenv` from `run.sh`. It is an s6-overlay
+  helper, but 0.2.0 introduced `tini` as PID 1 (replacing s6-overlay),
+  so `/run/s6/container_environment/` no longer exists and the
+  container was crashlooping with `s6-envdir: fatal`.
+
 ## 0.2.1 — 2026-06-16
 
 - Fix ebusd `.deb` URL: upstream uses `ebusd-26.1_<arch>-bookworm_mqtt1.deb`

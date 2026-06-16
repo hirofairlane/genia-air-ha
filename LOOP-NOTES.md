@@ -60,7 +60,27 @@ Wait for soft-launch feedback. Likely candidates:
 - Polished `genia_air/README.md` (install steps, troubleshooting, screenshot anchors)
 - Scheduled daily cron (auto-expires in 7 days; Sergio re-prompts for last 3)
 
-### Session 1 — 2026-06-16 (architectural pivot to self-contained)
+### Session 1 — 2026-06-16 (architectural pivot to self-contained) — VERIFIED
+**Status at session close**: ebusd running inside the add-on, signal
+acquired on `192.168.1.61:9999`, MQTT publishing, `/api/state` returns
+live data (room 23.5°C, supply 29.5°C, ΔT 1.5K, yield_total 40,415 kWh).
+
+**Versions shipped**:
+- 0.2.0 — initial self-contained build (failed: wrong `.deb` URL).
+- 0.2.1 — fix `.deb` URL (failed: `tini` ENTRYPOINT broke s6 envdir).
+- 0.2.2 — same as 0.2.1 (still broken).
+- 0.2.3 — drop `tini` ENTRYPOINT, restore s6 init + with-contenv (worked
+  but configured device `192.168.1.171` was dead).
+- 0.2.4 — TCP auto-fallback: probe configured device, scan /24 for live
+  adapter if unreachable. **CURRENT, working**.
+
+**The 192.168.1.171 → 192.168.1.61 saga**: Sergio had two adapters in
+INFRA inventory. .171 was the documented "main", but it's been dead at
+least since today's session. .61 (the ESP32) is the live one. The
+auto-fallback found it in one /24 sweep. Config schema default also
+updated to .61 for fresh installs.
+
+**Pending in next session(s) — historical data migration:**
 **Sergio uninstalled the LukasGrebe ebusd add-on** to force the add-on
 to be standalone. v0.2.0 work:
 
@@ -95,3 +115,10 @@ historical data is in HA Recorder and InfluxDB. Two-step migration:
 
 Then verify Energy Optimizer (which reads InfluxDB for thermal model
 fits) still finds the data under the new names.
+
+**Known issue carried forward**: 5 add-on discovery entities is a tiny
+subset of the 35+ entities the legacy setup had. The history of the
+non-migrated ones lives only in Recorder/Influx under the old names —
+not displayed in our UI but still queryable. Decide in v0.3 whether to
+publish MQTT discovery for every entity_catalog item (35+) so all the
+legacy entities can be adopted, or stay minimal.

@@ -35,17 +35,62 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.2.1"
+VERSION = "0.2.4"
 
 
 def _load_options() -> dict:
     """Read /data/options.json — written by the supervisor from the user config."""
     try:
         with open("/data/options.json") as f:
-            return json.load(f)
+            opts = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as exc:
         logging.warning("Cannot read /data/options.json: %s", exc)
         return {}
+    # If the configured ebus_device is a TCP endpoint and unreachable, try to
+    # find a live adapter on the same /24. Helps when an old IP is persisted in
+    # the supervisor's options.json after the user moved the adapter.
+    dev = str(opts.get("ebus_device", ""))
+    m = re.match(r"^(ens|enh|tcp):([^:]+):(\d+)$", dev)
+    if m:
+        proto, host, port = m.group(1), m.group(2), int(m.group(3))
+        if not _tcp_probe(host, port):
+            alt = _scan_lan_for_ebus(host, port)
+            if alt and alt != host:
+                opts["ebus_device"] = f"{proto}:{alt}:{port}"
+                print(f"[boot] ebus_device {host}:{port} unreachable, "
+                      f"falling back to {alt}:{port}", file=__import__('sys').stderr)
+    return opts
+
+
+def _tcp_probe(host: str, port: int, timeout: float = 1.5) -> bool:
+    import socket as _s
+    sock = _s.socket(_s.AF_INET, _s.SOCK_STREAM)
+    sock.settimeout(timeout)
+    try:
+        sock.connect((host, port))
+        sock.close()
+        return True
+    except Exception:
+        return False
+
+
+def _scan_lan_for_ebus(seed_host: str, port: int) -> str | None:
+    """Best-effort scan: try the user's /24 (and /24 neighbouring), looking for
+    a host that accepts TCP on `port`. Returns the first match (excluding the
+    seed and its standard gateway), or None."""
+    parts = seed_host.split(".")
+    if len(parts) != 4:
+        return None
+    base = ".".join(parts[:3])
+    candidates = [f"{base}.{i}" for i in range(1, 255) if str(i) != parts[3]]
+    # Don't scan the whole /24 sequentially — too slow. Use threads.
+    import concurrent.futures as _cf
+    with _cf.ThreadPoolExecutor(max_workers=32) as ex:
+        futures = {ex.submit(_tcp_probe, host, port, 0.6): host for host in candidates}
+        for fut in _cf.as_completed(futures):
+            if fut.result():
+                return futures[fut]
+    return None
 
 
 def _query_supervisor_mqtt(retries: int = 12, backoff: float = 2.0) -> dict:

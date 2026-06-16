@@ -12,7 +12,7 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends \
         python3 python3-pip python3-flask python3-paho-mqtt \
         python3-requests python3-tz python3-apscheduler \
-        wget ca-certificates jq tini; \
+        wget ca-certificates jq; \
     case "${BUILD_ARCH}" in \
         amd64)    EBUSD_ARCH=amd64 ;; \
         aarch64)  EBUSD_ARCH=arm64 ;; \
@@ -30,6 +30,7 @@ RUN set -eux; \
 COPY rootfs /
 RUN chmod +x /usr/bin/run.sh /usr/bin/genia_air.py
 
-# tini = PID 1 (proper signal handling for the python parent which spawns ebusd)
-ENTRYPOINT ["/usr/bin/tini", "--"]
+# Inherit the HA base image's s6-overlay init (/init); our run.sh becomes the
+# main process via CMD, with s6 wrapping it. Python catches SIGTERM and
+# tears down the ebusd subprocess cleanly.
 CMD ["/usr/bin/run.sh"]
