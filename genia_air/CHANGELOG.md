@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.7 — 2026-06-19
+
+- **Fix HTTP 403 on every write** (setpoint, mode, optimizer, manual
+  write, ebusd control). The ingress guard required an `X-Hass-User`
+  header that **Home Assistant Ingress never sends** — Ingress stamps
+  `X-Ingress-Path` plus `X-Remote-User-Id` / `X-Remote-User-Name`. GET
+  routes worked; any POST 403'd. The guard now trusts Ingress presence
+  (`X-Ingress-Path`) as proof of an authenticated HA user, and the audit
+  log records identity from `X-Remote-User-*`.
+
 ## 0.2.6 — 2026-06-19
 
 - **Fix build on 32-bit ARM (armv7/armhf).** The Dockerfile asked for a

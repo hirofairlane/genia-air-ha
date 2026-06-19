@@ -35,7 +35,7 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.2.6"
+VERSION = "0.2.7"
 
 
 def _load_options() -> dict:
@@ -925,14 +925,17 @@ app = Flask(__name__)
 
 @app.before_request
 def _ingress_guard():
-    """All routes require X-Ingress-Path; writes additionally require X-Hass-User."""
+    """All routes must arrive via HA Ingress (loopback allowed for healthchecks).
+
+    HA Ingress only proxies *authenticated* HA sessions and stamps every
+    request with X-Ingress-Path, so its presence already proves the caller
+    is a logged-in HA user. Identity (for the audit log) comes from the
+    X-Remote-User-* headers Ingress injects — note there is NO 'X-Hass-User'
+    header; requiring it 403'd every write.
+    """
+    is_loopback = request.remote_addr in ("127.0.0.1", "::1")
     if request.path.startswith("/api/") or request.path == "/":
-        if not request.headers.get("X-Ingress-Path"):
-            # Allow loopback for healthchecks
-            if request.remote_addr not in ("127.0.0.1", "::1"):
-                abort(403)
-    if request.method in ("POST", "PUT", "DELETE"):
-        if not request.headers.get("X-Hass-User") and request.remote_addr not in ("127.0.0.1", "::1"):
+        if not request.headers.get("X-Ingress-Path") and not is_loopback:
             abort(403)
 
 
@@ -1030,7 +1033,8 @@ def api_write():
     if msg == "Hc1MinFlowTempDesired":
         value = max(CONF["min_flow_temp_safe"], min(CONF["max_flow_temp_safe"] - 4, float(value)))
     mqtt_publish_write(circuit, msg, value)
-    user = request.headers.get("X-Hass-User", "unknown")
+    user = (request.headers.get("X-Remote-User-Name")
+            or request.headers.get("X-Remote-User-Id", "unknown"))
     db_log_decision("user_write", f"{circuit}/{msg}={value} by user {user[:8]}",
                     {"circuit": circuit, "msg": msg, "value": value, "user": user})
     return jsonify({"ok": True, "circuit": circuit, "msg": msg, "value": value})

@@ -1,5 +1,5 @@
 name: Vaillant Genia Air
-version: "0.2.6"
+version: "0.2.7"
 slug: genia_air
 description: Standalone control & optimization for Vaillant Genia Air — bundled ebusd daemon, dashboard, history
 url: https://github.com/hirofairlane/genia-air-ha
