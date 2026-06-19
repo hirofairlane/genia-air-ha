@@ -35,7 +35,7 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.2.5"
+VERSION = "0.2.6"
 
 
 def _load_options() -> dict:
@@ -240,7 +240,7 @@ def db_init() -> None:
         conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS snapshots (
-                ts          INTEGER PRIMARY KEY,
+                ts          INTEGER,
                 series      TEXT,
                 value       REAL,
                 PRIMARY KEY (ts, series)

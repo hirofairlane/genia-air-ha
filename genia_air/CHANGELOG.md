@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.6 — 2026-06-19
+
+- **Fix build on 32-bit ARM (armv7/armhf).** The Dockerfile asked for a
+  non-existent `ebusd-26.1_armhf-bookworm_mqtt1.deb` (HTTP 404), so the
+  add-on build failed on Raspberry Pi 32-bit installs. Upstream ships
+  `armv7`, not `armhf` — both HA arches now map to the `armv7` `.deb`.
+  amd64 / aarch64 / i386 were already correct.
+- **USB adapter support.** `uart: true` in the add-on config so a
+  USB-attached eBUS adapter (`/dev/ttyUSB0`) is actually mapped into the
+  container — the README already documented it but the option was
+  missing.
+- Fix the `snapshots` table DDL (it declared two PRIMARY KEYs, so the
+  composite-PK schema always errored and silently fell back to a
+  no-dedup table). Now uses a real `PRIMARY KEY (ts, series)`.
+
 ## 0.2.5 — 2026-06-16
 
 - Fix **Total hours / Heating hours / Cooling hours** stuck at "—". The

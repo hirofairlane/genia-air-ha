@@ -16,8 +16,8 @@ RUN set -eux; \
     case "${BUILD_ARCH}" in \
         amd64)    EBUSD_ARCH=amd64 ;; \
         aarch64)  EBUSD_ARCH=arm64 ;; \
-        armv7)    EBUSD_ARCH=armhf ;; \
-        armhf)    EBUSD_ARCH=armhf ;; \
+        armv7)    EBUSD_ARCH=armv7 ;; \
+        armhf)    EBUSD_ARCH=armv7 ;; \
         i386)     EBUSD_ARCH=386 ;; \
         *) echo "Unsupported BUILD_ARCH=${BUILD_ARCH}"; exit 1 ;; \
     esac; \

@@ -1,5 +1,5 @@
 name: Vaillant Genia Air
-version: "0.2.5"
+version: "0.2.6"
 slug: genia_air
 description: Standalone control & optimization for Vaillant Genia Air — bundled ebusd daemon, dashboard, history
 url: https://github.com/hirofairlane/genia-air-ha
@@ -21,6 +21,7 @@ ingress_port: 8099
 panel_icon: mdi:heat-pump
 panel_title: Genia Air
 panel_admin: false
+uart: true
 map:
   - share:rw
 options:
