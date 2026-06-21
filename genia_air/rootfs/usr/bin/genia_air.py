@@ -35,7 +35,7 @@ from flask import Flask, abort, g, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.2.7"
+VERSION = "0.2.8"
 
 
 def _load_options() -> dict:
@@ -604,13 +604,59 @@ _STATE_TO_HVAC = {
 
 
 def compute_hvac_action() -> str:
-    entry = None
+    """What the pump is doing right now.
+
+    Primary source is the hmu/State code (field 3). When that field is
+    missing or carries a code we don't have mapped, infer the activity
+    from the compressor: if it is drawing power or modulating, report
+    heating/cooling (disambiguated by mode and the supply−return sign);
+    otherwise idle. This avoids the opaque "unknown" pill in the UI.
+    """
     with STATE_LOCK:
         entry = STATE.get(("hmu", "State"))
-    if not entry:
-        return "unknown"
-    raw = str(entry["fields"].get("3", ""))
-    return _STATE_TO_HVAC.get(raw, "unknown")
+    if entry:
+        mapped = _STATE_TO_HVAC.get(str(entry["fields"].get("3", "")))
+        if mapped:
+            return mapped
+    modulation = _field("hmu", "CurrentCompressorUtil", "0")
+    power_in = _field("hmu", "CurrentConsumedPower", "0")
+    active = (modulation is not None and modulation > 1) or \
+             (power_in is not None and power_in > 0.1)
+    if not active:
+        return "idle"
+    mode = compute_hvac_mode()
+    if mode == "cool":
+        return "cooling"
+    if mode == "heat":
+        return "heating"
+    # auto: the compressor is running but mode doesn't say which way —
+    # use the flow vs return sign (negative ΔT = cooling).
+    dt = compute_delta_t()
+    if dt is not None and dt < -0.3:
+        return "cooling"
+    if dt is not None and dt > 0.3:
+        return "heating"
+    return "running"
+
+
+def compute_setpoint_effective() -> float | None:
+    """The target room temperature that actually applies right now.
+
+    Picks the cooling or heating setpoint based on what the system is
+    doing, so the UI never shows the (often 0.0 °C) heating-desired value
+    while the unit is cooling in summer. Treats 0/None as "no target".
+    """
+    def ok(v):
+        return v if (v is not None and v > 1) else None
+    cooling = ok(_field("ctls2", "z1CoolingTemp", "tempv"))
+    heating = ok(_field("ctls2", "z1ActualRoomTempDesired", "tempv")) \
+        or ok(_field("ctls2", "z1ManualTemp", "tempv"))
+    mode, action = compute_hvac_mode(), compute_hvac_action()
+    if mode == "cool" or action == "cooling":
+        return cooling or heating
+    if mode == "heat" or action == "heating":
+        return heating or cooling
+    return heating or cooling
 
 
 def compute_hvac_mode() -> str:
@@ -642,6 +688,7 @@ def collect_snapshot() -> dict:
         "setpoint_actual": _field("ctls2", "z1ActualRoomTempDesired", "tempv"),
         "setpoint_manual": _field("ctls2", "z1ManualTemp", "tempv"),
         "setpoint_cooling": _field("ctls2", "z1CoolingTemp", "tempv"),
+        "setpoint_effective": compute_setpoint_effective(),
         "outside_temp": _field("ctls2", "OutsideTempAvg", "tempv"),
         "delta_t": compute_delta_t(),
         "cop": compute_cop(),
@@ -1199,7 +1246,7 @@ input:checked+.tslide:before{transform:translateX(20px);background:#0f172a}
         <div class="label">Room temperature</div>
       </div>
       <div class="thermo-meta">
-        <div class="thermo-line">Current setpoint: <span id="setp-actual">--</span></div>
+        <div class="thermo-line">Target temperature: <span id="setp-actual" style="font-size:1.1rem;color:var(--a);font-weight:700">--</span> <span id="setp-which" class="badge bg-m" style="display:none"></span></div>
         <div class="thermo-line">Mode: <span id="hvac-mode" class="mode-pill bg-m">--</span> <span id="hvac-action" class="action-pill bg-m">--</span></div>
         <div class="thermo-line">Outdoor (averaged): <span id="outside">--</span></div>
       </div>
@@ -1319,20 +1366,33 @@ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
 
 // Overview
 const MODE_CLASS = {heat:"bg-g",cool:"bg-a",auto:"bg-y",off:"bg-m",unknown:"bg-m"};
-const ACTION_CLASS = {heating:"bg-g",cooling:"bg-a",idle:"bg-m",off:"bg-m",unknown:"bg-m"};
+const ACTION_CLASS = {heating:"bg-g",cooling:"bg-a",idle:"bg-m",off:"bg-m",running:"bg-y",unknown:"bg-m"};
 
 async function loadState(){
   try{
     const s = await api("/api/state");
     $("version").textContent = "v"+s.version;
     $("room-temp").textContent = fmt(s.room_temp, "°C");
-    $("setp-actual").textContent = fmt(s.setpoint_actual, "°C");
+    const target = (s.setpoint_effective!=null) ? s.setpoint_effective : s.setpoint_actual;
+    $("setp-actual").textContent = fmt(target, "°C");
+    // Tell the user whether the shown target is the heating or cooling one.
+    const which = (s.hvac_mode==="cool"||s.hvac_action==="cooling") ? "cooling"
+                : (s.hvac_mode==="heat"||s.hvac_action==="heating") ? "heating" : "";
+    const sw = $("setp-which");
+    if(which){ sw.textContent = which; sw.style.display=""; sw.className="badge "+(which==="cooling"?"bg-a":"bg-g"); }
+    else { sw.style.display="none"; }
     $("hvac-mode").textContent = s.hvac_mode.toUpperCase();
     $("hvac-mode").className = "mode-pill "+(MODE_CLASS[s.hvac_mode]||"bg-m");
-    $("hvac-action").textContent = s.hvac_action.toUpperCase();
-    $("hvac-action").className = "action-pill "+(ACTION_CLASS[s.hvac_action]||"bg-m");
+    // Hide the activity pill entirely when we genuinely can't tell, rather
+    // than showing a confusing "UNKNOWN".
+    const ha = $("hvac-action");
+    if(s.hvac_action && s.hvac_action!=="unknown"){
+      ha.textContent = s.hvac_action.toUpperCase();
+      ha.className = "action-pill "+(ACTION_CLASS[s.hvac_action]||"bg-m");
+      ha.style.display="";
+    } else { ha.style.display="none"; }
     $("outside").textContent = fmt(s.outside_temp, "°C");
-    if(!$("setp-input").dataset.touched) $("setp-input").value = s.setpoint_actual || s.setpoint_manual || "";
+    if(!$("setp-input").dataset.touched) $("setp-input").value = target || s.setpoint_manual || "";
     const k = $("kpis"); k.innerHTML="";
     [
       ["ΔT", fmt(s.delta_t, " K"), s.delta_t==null?"":"y"],

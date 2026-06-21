@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.8 — 2026-06-21
+
+- **Clearer target temperature.** The thermostat card showed
+  `Current setpoint: 0.0°C` because it always rendered the *heating*
+  desired value, which the pump reports as 0 while cooling in summer.
+  New `setpoint_effective` picks the cooling or heating setpoint based on
+  what the unit is actually doing, labelled `heating`/`cooling` so it's
+  unambiguous.
+- **No more "UNKNOWN" activity pill.** `hvac_action` now falls back to
+  inferring activity from the compressor (power/modulation, with the
+  supply−return sign disambiguating heat vs cool in AUTO) when the raw
+  hmu/State code isn't mapped. If it still can't tell, the pill is hidden
+  instead of showing a confusing "UNKNOWN".
+
 ## 0.2.7 — 2026-06-19
 
 - **Fix HTTP 403 on every write** (setpoint, mode, optimizer, manual
