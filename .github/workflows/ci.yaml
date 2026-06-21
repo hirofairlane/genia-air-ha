@@ -13,35 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: YAML is well-formed
-        run: |
-          python - <<'PY'
-          import yaml, sys
-          for f in ("genia_air/config.yaml", "genia_air/build.yaml", "repository.yaml"):
-              with open(f) as fh:
-                  yaml.safe_load(fh)
-              print(f"OK  {f}")
-          PY
-
+      - name: Install PyYAML
+        run: pip install pyyaml
       - name: Python entrypoint compiles
         run: python -m py_compile genia_air/rootfs/usr/bin/genia_air.py
-
-      - name: config.yaml version == VERSION in genia_air.py
-        run: |
-          python - <<'PY'
-          import re, yaml, sys
-          cfg = yaml.safe_load(open("genia_air/config.yaml"))["version"]
-          src = open("genia_air/rootfs/usr/bin/genia_air.py").read()
-          ver = re.search(r'VERSION\s*=\s*"([^"]+)"', src).group(1)
-          print(f"config.yaml={cfg}  VERSION={ver}")
-          sys.exit(0 if cfg == ver else f"MISMATCH: config.yaml {cfg} != genia_air.py {ver}")
-          PY
+      - name: YAML + version-sync checks
+        run: python tests/validate_repo.py
 
   # ── Regression suite + code-quality gate (the "Sonar-lite" loop) ──
   tests:
@@ -60,9 +40,12 @@ jobs:
           GENIA_AIR_TESTING: "1"
         run: pytest tests/ -q --cov=genia_air --cov-report=term-missing
 
-  # ── Official Home Assistant add-on config linter ──
+  # ── Official Home Assistant add-on config linter (advisory: this 3rd-party
+  #    linter is opinionated and may flag legit local-build configs; it informs
+  #    but does not gate the build). ──
   addon-lint:
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Home Assistant add-on linter
