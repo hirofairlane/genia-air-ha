@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # ── Static validation: YAML well-formed, Python compiles, versions in sync ──
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: YAML is well-formed
+        run: |
+          python - <<'PY'
+          import yaml, sys
+          for f in ("genia_air/config.yaml", "genia_air/build.yaml", "repository.yaml"):
+              with open(f) as fh:
+                  yaml.safe_load(fh)
+              print(f"OK  {f}")
+          PY
+
+      - name: Python entrypoint compiles
+        run: python -m py_compile genia_air/rootfs/usr/bin/genia_air.py
+
+      - name: config.yaml version == VERSION in genia_air.py
+        run: |
+          python - <<'PY'
+          import re, yaml, sys
+          cfg = yaml.safe_load(open("genia_air/config.yaml"))["version"]
+          src = open("genia_air/rootfs/usr/bin/genia_air.py").read()
+          ver = re.search(r'VERSION\s*=\s*"([^"]+)"', src).group(1)
+          print(f"config.yaml={cfg}  VERSION={ver}")
+          sys.exit(0 if cfg == ver else f"MISMATCH: config.yaml {cfg} != genia_air.py {ver}")
+          PY
+
+  # ── Regression suite + code-quality gate (the "Sonar-lite" loop) ──
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install paho-mqtt flask apscheduler requests pytest pytest-cov ruff
+      - name: Ruff (code quality)
+        run: ruff check .
+      - name: Pytest (regression) with coverage
+        env:
+          GENIA_AIR_TESTING: "1"
+        run: pytest tests/ -q --cov=genia_air --cov-report=term-missing
+
+  # ── Official Home Assistant add-on config linter ──
+  addon-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Home Assistant add-on linter
+        uses: frenck/action-addon-linter@v2
+        with:
+          path: "./genia_air"
+
+  # ── The exact failure that broke install on armv7: ebusd .deb must exist
+  #    for every supported arch. Keep the mapping in sync with the Dockerfile. ──
+  ebusd-deb-urls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ebusd .deb resolves for every arch
+        run: |
+          set -euo pipefail
+          EBUSD_VERSION="$(grep -oP 'ARG EBUSD_VERSION=\K[0-9.]+' genia_air/Dockerfile)"
+          echo "ebusd version from Dockerfile: ${EBUSD_VERSION}"
+          declare -A MAP=( [amd64]=amd64 [aarch64]=arm64 [armv7]=armv7 [armhf]=armv7 [i386]=386 )
+          fail=0
+          for ha_arch in "${!MAP[@]}"; do
+            deb="ebusd-${EBUSD_VERSION}_${MAP[$ha_arch]}-bookworm_mqtt1.deb"
+            url="https://github.com/john30/ebusd/releases/download/${EBUSD_VERSION}/${deb}"
+            code="$(curl -s -o /dev/null -w '%{http_code}' -I -L "$url")"
+            if [ "$code" = "200" ]; then
+              echo "OK   ${ha_arch} -> ${deb}"
+            else
+              echo "FAIL ${ha_arch} -> ${deb} (HTTP ${code})"; fail=1
+            fi
+          done
+          exit $fail
+
+  # ── Full Docker build (native amd64) — validates the Dockerfile end to end,
+  #    including apt deps and the ebusd .deb install. ──
+  build-amd64:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build add-on image (amd64)
+        run: |
+          docker build \
+            --build-arg BUILD_FROM=ghcr.io/home-assistant/amd64-base-debian:bookworm \
+            --build-arg BUILD_ARCH=amd64 \
+            -t genia-air:ci genia_air

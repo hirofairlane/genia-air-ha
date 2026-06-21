@@ -14,7 +14,6 @@ from __future__ import annotations
 import json
 import logging
 import os
-import queue
 import re
 import signal
 import sqlite3
@@ -23,13 +22,13 @@ import sys
 import threading
 import time
 from collections import OrderedDict
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import paho.mqtt.client as mqtt
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, abort, g, jsonify, request
+from flask import Flask, abort, jsonify, request
 
 # ───────────────────────────────────────────────────────────────────────────
 # Config & logging
@@ -140,8 +139,13 @@ def _query_supervisor_mqtt(retries: int = 12, backoff: float = 2.0) -> dict:
     return {}
 
 
-_opts = _load_options()
-_mqtt = _query_supervisor_mqtt()
+# GENIA_AIR_TESTING lets the regression suite import this module without the
+# import-time side effects (supervisor/network calls). Production never sets it.
+if os.environ.get("GENIA_AIR_TESTING"):
+    _opts, _mqtt = {}, {}
+else:
+    _opts = _load_options()
+    _mqtt = _query_supervisor_mqtt()
 
 CONF = {
     "ebus_device":           _opts.get("ebus_device", "ens:192.168.1.171:9999"),
@@ -169,8 +173,8 @@ log = logging.getLogger("genia_air")
 log.info("Genia Air addon v%s starting", VERSION)
 log.info("Config: %s", {k: v for k, v in CONF.items() if k != "mqtt_pass"})
 
-DATA = Path("/data")
-DATA.mkdir(exist_ok=True)
+DATA = Path(os.environ.get("GENIA_AIR_DATA", "/data"))
+DATA.mkdir(parents=True, exist_ok=True)
 DB_PATH = DATA / "history.db"
 DECISIONS_PATH = DATA / "decisions.jsonl"
 
@@ -1092,7 +1096,6 @@ def api_mode():
     mode = (request.get_json(force=True, silent=True) or {}).get("mode", "")
     if mode not in ("off", "heat", "cool", "auto"):
         abort(400)
-    z = 1
     pairs = {
         "off":  [("z1OpMode", "off"),  ("z1OpModeCooling", "off")],
         "heat": [("z1OpMode", "auto"), ("z1OpModeCooling", "off")],
@@ -1661,8 +1664,6 @@ def boot() -> None:
              EBUSD_PROCESS.pid if EBUSD_PROCESS else "?")
 
 
-boot()
-
-
 if __name__ == "__main__":
+    boot()
     app.run(host="0.0.0.0", port=8099)
