@@ -48,9 +48,11 @@ adapter that exposes the bus on a TCP port (default `9999`).
 1. In Home Assistant: **Settings → Add-ons → Add-on Store → ⋯ → Repositories**
    and add `https://github.com/hirofairlane/genia-air-ha`.
 2. Install **Vaillant Genia Air**.
-3. Set `ebus_device` in the configuration tab to your adapter, e.g.:
-   - `ens:192.168.1.171:9999` for a network adapter (ens = enhanced),
-   - `enh:192.168.1.171:9999` for an old-style network adapter,
+3. Set `ebus_device` in the configuration tab to **your** adapter (the
+   `192.168.1.100` default is only a placeholder — replace it with your
+   adapter's real address), e.g.:
+   - `ens:<adapter-ip>:9999` for a network adapter (ens = enhanced),
+   - `enh:<adapter-ip>:9999` for an old-style network adapter,
    - `/dev/ttyUSB0` for a USB-attached adapter.
 4. Start the add-on. Click **Open Web UI**, or use the **Genia Air**
    entry that appears in the Home Assistant sidebar.
@@ -59,7 +61,7 @@ adapter that exposes the bus on a TCP port (default `9999`).
 
 | Option | Default | Notes |
 |---|---|---|
-| `ebus_device` | `ens:192.168.1.171:9999` | eBUS adapter URL (`ens:`, `enh:`, `/dev/tty*`) |
+| `ebus_device` | `ens:192.168.1.100:9999` | eBUS adapter URL (`ens:`, `enh:`, `/dev/tty*`) |
 | `topic_prefix` | `ebusd` | MQTT topic prefix used by ebusd |
 | `zone_count` | `1` | v0.2 controls zone 1 only |
 | `optimize_flow_temp` | `true` | Master switch for the optimizer |
@@ -101,10 +103,10 @@ ebusd JSON payloads, computes derived values (ΔT, COP, hvac action),
 runs the optimizer every five minutes and publishes a tiny MQTT Discovery
 device back into Home Assistant.
 
-See [`PLAN-ADDON.md`](../PLAN-ADDON.md) in the repository for the
+See [`ARCHITECTURE.md`](../ARCHITECTURE.md) in the repository for the
 full design notes.
 
-## What's intentionally NOT here in v0.1
+## What's intentionally NOT here yet
 
 - ML-based optimization (the optimizer is deterministic; ML is planned).
 - Multi-zone (Z2/Z3) support.

@@ -34,7 +34,7 @@ from flask import Flask, abort, jsonify, request
 # Config & logging
 # ───────────────────────────────────────────────────────────────────────────
 
-VERSION = "0.2.8"
+VERSION = "0.3.0"
 
 
 def _load_options() -> dict:
@@ -148,7 +148,7 @@ else:
     _mqtt = _query_supervisor_mqtt()
 
 CONF = {
-    "ebus_device":           _opts.get("ebus_device", "ens:192.168.1.171:9999"),
+    "ebus_device":           _opts.get("ebus_device", "ens:192.168.1.100:9999"),
     "ebusd_log_level":       str(_opts.get("ebusd_log_level", "notice")),
     "topic_prefix":          _opts.get("topic_prefix", "ebusd"),
     "zone_count":            int(_opts.get("zone_count", 1)),

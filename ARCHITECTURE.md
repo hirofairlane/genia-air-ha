@@ -9,7 +9,7 @@
 │  HARDWARE                                                              │
 │  Vaillant Genia Air (HMU 0901 + CTLS2 0509) + VWZIO 76                 │
 │                              ↑↓ eBUS                                   │
-│  eBUS network adapter (192.168.1.61:9999, enh: protocol)               │
+│  eBUS network adapter (192.168.1.100:9999, enh: protocol)               │
 └────────────────────────────────────────────────────────────────────────┘
                               ↑↓ TCP
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -40,7 +40,7 @@
 
 ## Why MQTT-based and not direct eBUS reading
 
-We could open a direct TCP connection to the eBUS adapter (192.168.1.61:9999) and reimplement the ebusd protocol in Python. **We don't**, for three reasons:
+We could open a direct TCP connection to the eBUS adapter (192.168.1.100:9999) and reimplement the ebusd protocol in Python. **We don't**, for three reasons:
 
 1. **ebusd is a battle-tested C daemon** with multi-master bus arbitration, CSV-driven message decoding, scan-config, retry logic, log levels, etc. Reimplementing that in Python is months of work for zero added value.
 2. **One process owns the bus**. If both ebusd and our integration tried to drive the adapter, we'd corrupt the bus. By relying on ebusd we coexist cleanly with users who already have it set up.

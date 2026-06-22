@@ -13,7 +13,7 @@ Example (v1.x):
 Example (v2.x):
     python migrate_influxdb.py \\
         --influx-url http://192.168.1.131:8086 \\
-        --influx-org "Sergio" --influx-bucket "home_assistant" \\
+        --influx-org "your-org" --influx-bucket "home_assistant" \\
         --influx-token "$INFLUX_TOKEN" \\
         --mapping mapping.yaml
 

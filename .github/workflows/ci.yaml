@@ -64,7 +64,7 @@ jobs:
           set -euo pipefail
           EBUSD_VERSION="$(grep -oP 'ARG EBUSD_VERSION=\K[0-9.]+' genia_air/Dockerfile)"
           echo "ebusd version from Dockerfile: ${EBUSD_VERSION}"
-          declare -A MAP=( [amd64]=amd64 [aarch64]=arm64 [armv7]=armv7 [armhf]=armv7 [i386]=386 )
+          declare -A MAP=( [amd64]=amd64 [aarch64]=arm64 )
           fail=0
           for ha_arch in "${!MAP[@]}"; do
             deb="ebusd-${EBUSD_VERSION}_${MAP[$ha_arch]}-bookworm_mqtt1.deb"

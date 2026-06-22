@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0 — 2026-06-22
+
+First community release. Repository polish + add-on store hygiene:
+
+- **Genericized all defaults** — removed personal network/IP values; the
+  `ebus_device` default is now an obvious placeholder you must replace.
+- **Passes the official add-on linter**: dropped `boot`/`ingress_port`
+  (they were set to their defaults) and removed the **deprecated 32-bit
+  arches** (`armv7`/`armhf`/`i386`) per Home Assistant 2025.12. Supported
+  arches are now `aarch64` and `amd64`.
+- Added add-on **icon and logo**, a community-facing README (badges,
+  one-click "add repository", features, screenshots placeholder) and a CI
+  badge.
+- Removed internal development notes from the published repo.
+
+No functional changes to the control/optimizer logic vs 0.2.8.
+
 ## 0.2.8 — 2026-06-21
 
 - **Clearer target temperature.** The thermostat card showed

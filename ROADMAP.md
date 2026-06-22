@@ -19,7 +19,7 @@ Goal: **installable from HACS, claims existing legacy entities, no data loss**.
 - [ ] First-pass `climate.py` (zone 1 only)
 - [ ] Bundle eBUS CSVs under `custom_components/genia_air/ebusd_csv/` with LGPL LICENSE
 - [ ] Unit tests for the migration mapping logic
-- [ ] Test on Sergio's live HA (only validated installation)
+- [ ] Test on additional real-world installations
 - [ ] Tag v0.1.0, submit to HACS default
 
 ## v0.2.0 — beta (target: 1-2 weeks after v0.1)
