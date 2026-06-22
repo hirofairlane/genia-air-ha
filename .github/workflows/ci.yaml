@@ -40,12 +40,9 @@ jobs:
           GENIA_AIR_TESTING: "1"
         run: pytest tests/ -q --cov=genia_air --cov-report=term-missing
 
-  # ── Official Home Assistant add-on config linter (advisory: this 3rd-party
-  #    linter is opinionated and may flag legit local-build configs; it informs
-  #    but does not gate the build). ──
+  # ── Official Home Assistant add-on config linter (enforced gate). ──
   addon-lint:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Home Assistant add-on linter
